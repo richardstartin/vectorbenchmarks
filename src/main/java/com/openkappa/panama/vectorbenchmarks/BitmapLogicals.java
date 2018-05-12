@@ -37,20 +37,59 @@ public class BitmapLogicals {
     bh.consume(result);
   }
 
-// Seems not to have been intrinsified :(
-//  @Benchmark
-//  public void intersectPanamaLong(Blackhole bh) {
-//    for (int i = 0; i < size; i += 4) {
-//      SPECIES.fromArray(left, i).and(SPECIES.fromArray(right, i)).intoArray(result, i);
-//    }
-//    bh.consume(result);
-//  }
+  @Benchmark
+  public void unionAutovectorised(Blackhole bh) {
+    for (int i = 0; i < size; ++i) {
+      result[i] = left[i] | right[i];
+    }
+    bh.consume(result);
+  }
+
+  @Benchmark
+  public void differenceAutovectorised(Blackhole bh) {
+    for (int i = 0; i < size; ++i) {
+      result[i] = left[i] ^ right[i];
+    }
+    bh.consume(result);
+  }
+
+  @Benchmark
+  public void leftDifferenceAutovectorised(Blackhole bh) {
+    for (int i = 0; i < size; ++i) {
+      result[i] = left[i] & ~right[i];
+    }
+    bh.consume(result);
+  }
 
 
   @Benchmark
   public void intersectPanamaInt(Blackhole bh) {
     for (int i = 0; i < size; i += YMM_INT.length()) {
       YMM_INT.fromArray(left, i).and(YMM_INT.fromArray(right, i)).intoArray(result, i);
+    }
+    bh.consume(result);
+  }
+
+  @Benchmark
+  public void unionPanamaInt(Blackhole bh) {
+    for (int i = 0; i < size; i += YMM_INT.length()) {
+      YMM_INT.fromArray(left, i).or(YMM_INT.fromArray(right, i)).intoArray(result, i);
+    }
+    bh.consume(result);
+  }
+
+  @Benchmark
+  public void differencePanamaInt(Blackhole bh) {
+    for (int i = 0; i < size; i += YMM_INT.length()) {
+      YMM_INT.fromArray(left, i).xor(YMM_INT.fromArray(right, i)).intoArray(result, i);
+    }
+    bh.consume(result);
+  }
+
+  @Benchmark
+  public void leftDifferencePanamaInt(Blackhole bh) {
+    for (int i = 0; i < size; i += YMM_INT.length()) {
+      YMM_INT.fromArray(left, i).and(YMM_INT.fromArray(right, i).not()).intoArray(result, i);
     }
     bh.consume(result);
   }
