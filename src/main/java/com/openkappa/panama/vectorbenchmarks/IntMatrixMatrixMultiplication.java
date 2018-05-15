@@ -1,7 +1,5 @@
 package com.openkappa.panama.vectorbenchmarks;
 
-import jdk.incubator.vector.IntVector;
-import jdk.incubator.vector.Shapes;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -50,16 +48,16 @@ public class IntMatrixMatrixMultiplication {
       for (int rowOffset = 0; rowOffset < n; rowOffset += block_height) {
         for (int i = 0; i < n; ++i) {
           for (int j = columnOffset; j < columnOffset + blockWidth && j < n; j += 64) {
-            IntVector<Shapes.S256Bit> sum1 = YMM_INT.fromArray(result, i * n + j);
-            IntVector<Shapes.S256Bit> sum2 = YMM_INT.fromArray(result, i * n + j + 8);
-            IntVector<Shapes.S256Bit> sum3 = YMM_INT.fromArray(result, i * n + j + 16);
-            IntVector<Shapes.S256Bit> sum4 = YMM_INT.fromArray(result, i * n + j + 24);
-            IntVector<Shapes.S256Bit> sum5 = YMM_INT.fromArray(result, i * n + j + 32);
-            IntVector<Shapes.S256Bit> sum6 = YMM_INT.fromArray(result, i * n + j + 40);
-            IntVector<Shapes.S256Bit> sum7 = YMM_INT.fromArray(result, i * n + j + 48);
-            IntVector<Shapes.S256Bit> sum8 = YMM_INT.fromArray(result, i * n + j + 56);
+            var sum1 = YMM_INT.fromArray(result, i * n + j);
+            var sum2 = YMM_INT.fromArray(result, i * n + j + 8);
+            var sum3 = YMM_INT.fromArray(result, i * n + j + 16);
+            var sum4 = YMM_INT.fromArray(result, i * n + j + 24);
+            var sum5 = YMM_INT.fromArray(result, i * n + j + 32);
+            var sum6 = YMM_INT.fromArray(result, i * n + j + 40);
+            var sum7 = YMM_INT.fromArray(result, i * n + j + 48);
+            var sum8 = YMM_INT.fromArray(result, i * n + j + 56);
             for (int k = rowOffset; k < rowOffset + block_height && k < n; ++k) {
-              IntVector<Shapes.S256Bit> multiplier = YMM_INT.broadcast(left[i * n + k]);
+              var multiplier = YMM_INT.broadcast(left[i * n + k]);
               sum1 = sum1.add(multiplier.mul(YMM_INT.fromArray(right, k * n + j)));
               sum2 = sum2.add(multiplier.mul(YMM_INT.fromArray(right, k * n + j + 8)));
               sum3 = sum3.add(multiplier.mul(YMM_INT.fromArray(right, k * n + j + 16)));

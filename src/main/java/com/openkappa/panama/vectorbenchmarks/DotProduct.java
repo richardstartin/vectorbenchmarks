@@ -1,7 +1,5 @@
 package com.openkappa.panama.vectorbenchmarks;
 
-import jdk.incubator.vector.FloatVector;
-import jdk.incubator.vector.Shapes;
 import org.openjdk.jmh.annotations.*;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -30,10 +28,10 @@ public class DotProduct {
 
   @Benchmark
   public float dpPanama() {
-    FloatVector<Shapes.S256Bit> sum = YMM_FLOAT.zero();
+    var sum = YMM_FLOAT.zero();
     for (int i = 0; i < size; i += YMM_FLOAT.length()) {
-      FloatVector<Shapes.S256Bit> l = YMM_FLOAT.fromArray(left, i);
-      FloatVector<Shapes.S256Bit> r = YMM_FLOAT.fromArray(right, i);
+      var l = YMM_FLOAT.fromArray(left, i);
+      var r = YMM_FLOAT.fromArray(right, i);
       sum = sum.add(l.mul(r));
     }
     return sum.addAll();

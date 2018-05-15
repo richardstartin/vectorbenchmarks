@@ -1,7 +1,5 @@
 package com.openkappa.panama.vectorbenchmarks;
 
-import jdk.incubator.vector.FloatVector;
-import jdk.incubator.vector.Shapes;
 import org.openjdk.jmh.annotations.*;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -28,9 +26,9 @@ public class HorizontalSum {
 
   @Benchmark
   public float horizontalSumPanama() {
-    FloatVector<Shapes.S256Bit> sum = YMM_FLOAT.zero();
+    var sum = YMM_FLOAT.zero();
     for (int i = 0; i < size; i += YMM_FLOAT.length()) {
-      FloatVector<Shapes.S256Bit> l = YMM_FLOAT.fromArray(data, i);
+      var l = YMM_FLOAT.fromArray(data, i);
       sum = sum.add(l);
     }
     return sum.addAll();

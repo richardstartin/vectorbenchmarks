@@ -1,8 +1,6 @@
 package com.openkappa.panama.vectorbenchmarks;
 
 
-import jdk.incubator.vector.IntVector;
-import jdk.incubator.vector.Shapes;
 import org.openjdk.jmh.annotations.*;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -52,9 +50,9 @@ public class PolynomialHashCode {
 
   @Benchmark
   public int hashCodePanama() {
-    IntVector<Shapes.S256Bit> next = YMM_INT.broadcast(31 * 31 * 31 * 31 * 31 * 31 * 31 * 31);
-    IntVector<Shapes.S256Bit> coefficients = YMM_INT.fromArray(this.coefficients, 0);
-    IntVector<Shapes.S256Bit> acc = YMM_INT.zero();
+    var next = YMM_INT.broadcast(31 * 31 * 31 * 31 * 31 * 31 * 31 * 31);
+    var coefficients = YMM_INT.fromArray(this.coefficients, 0);
+    var acc = YMM_INT.zero();
     for (int i = 0; i < data.length; i += YMM_INT.length()) {
       acc = acc.add(coefficients.mul(YMM_INT.fromArray(data, i)));
       coefficients = coefficients.mul(next);

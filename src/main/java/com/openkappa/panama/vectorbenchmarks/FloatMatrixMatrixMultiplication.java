@@ -1,7 +1,5 @@
 package com.openkappa.panama.vectorbenchmarks;
 
-import jdk.incubator.vector.FloatVector;
-import jdk.incubator.vector.Shapes;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -45,21 +43,21 @@ public class FloatMatrixMatrixMultiplication {
 
   private static void mmulPanama(int n, float[] left, float[] right, float[] result) {
     int blockWidth = n >= 256 ? 512 : 256;
-    int block_height = n >= 512 ? 8 : n >= 256 ? 16 : 32;
+    int blockHeight = n >= 512 ? 8 : n >= 256 ? 16 : 32;
     for (int columnOffset = 0; columnOffset < n; columnOffset += blockWidth) {
-      for (int rowOffset = 0; rowOffset < n; rowOffset += block_height) {
+      for (int rowOffset = 0; rowOffset < n; rowOffset += blockHeight) {
         for (int i = 0; i < n; ++i) {
           for (int j = columnOffset; j < columnOffset + blockWidth && j < n; j += 64) {
-            FloatVector<Shapes.S256Bit> sum1 = YMM_FLOAT.fromArray(result, i * n + j);
-            FloatVector<Shapes.S256Bit> sum2 = YMM_FLOAT.fromArray(result, i * n + j + 8);
-            FloatVector<Shapes.S256Bit> sum3 = YMM_FLOAT.fromArray(result, i * n + j + 16);
-            FloatVector<Shapes.S256Bit> sum4 = YMM_FLOAT.fromArray(result, i * n + j + 24);
-            FloatVector<Shapes.S256Bit> sum5 = YMM_FLOAT.fromArray(result, i * n + j + 32);
-            FloatVector<Shapes.S256Bit> sum6 = YMM_FLOAT.fromArray(result, i * n + j + 40);
-            FloatVector<Shapes.S256Bit> sum7 = YMM_FLOAT.fromArray(result, i * n + j + 48);
-            FloatVector<Shapes.S256Bit> sum8 = YMM_FLOAT.fromArray(result, i * n + j + 56);
-            for (int k = rowOffset; k < rowOffset + block_height && k < n; ++k) {
-              FloatVector<Shapes.S256Bit> multiplier = YMM_FLOAT.broadcast(left[i * n + k]);
+            var sum1 = YMM_FLOAT.fromArray(result, i * n + j);
+            var sum2 = YMM_FLOAT.fromArray(result, i * n + j + 8);
+            var sum3 = YMM_FLOAT.fromArray(result, i * n + j + 16);
+            var sum4 = YMM_FLOAT.fromArray(result, i * n + j + 24);
+            var sum5 = YMM_FLOAT.fromArray(result, i * n + j + 32);
+            var sum6 = YMM_FLOAT.fromArray(result, i * n + j + 40);
+            var sum7 = YMM_FLOAT.fromArray(result, i * n + j + 48);
+            var sum8 = YMM_FLOAT.fromArray(result, i * n + j + 56);
+            for (int k = rowOffset; k < rowOffset + blockHeight && k < n; ++k) {
+              var multiplier = YMM_FLOAT.broadcast(left[i * n + k]);
               sum1 = sum1.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j));
               sum2 = sum2.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j + 8));
               sum3 = sum3.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j + 16));
