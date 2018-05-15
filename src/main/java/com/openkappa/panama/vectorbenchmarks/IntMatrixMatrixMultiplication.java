@@ -12,7 +12,7 @@ import static com.openkappa.panama.vectorbenchmarks.Util.YMM_INT;
 
 @BenchmarkMode(Mode.Throughput)
 @State(Scope.Benchmark)
-@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector", "-XX:TypeProfileLevel=222", "-XX:-TieredCompilation"})
+@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector", "-XX:TypeProfileLevel=111", "-XX:-TieredCompilation"})
 public class IntMatrixMatrixMultiplication {
 
 

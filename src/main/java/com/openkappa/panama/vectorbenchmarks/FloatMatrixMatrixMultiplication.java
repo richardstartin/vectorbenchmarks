@@ -12,7 +12,7 @@ import static com.openkappa.panama.vectorbenchmarks.Util.YMM_FLOAT;
 
 @BenchmarkMode(Mode.Throughput)
 @State(Scope.Benchmark)
-@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector", "-XX:TypeProfileLevel=222", "-XX:-TieredCompilation"})
+@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector", "-XX:TypeProfileLevel=111", "-XX:-TieredCompilation"})
 public class FloatMatrixMatrixMultiplication {
 
 
@@ -60,14 +60,14 @@ public class FloatMatrixMatrixMultiplication {
             FloatVector<Shapes.S256Bit> sum8 = YMM_FLOAT.fromArray(result, i * n + j + 56);
             for (int k = rowOffset; k < rowOffset + block_height && k < n; ++k) {
               FloatVector<Shapes.S256Bit> multiplier = YMM_FLOAT.broadcast(left[i * n + k]);
-              sum1 = sum1.add(multiplier.mul(YMM_FLOAT.fromArray(right, k * n + j)));
-              sum2 = sum2.add(multiplier.mul(YMM_FLOAT.fromArray(right, k * n + j + 8)));
-              sum3 = sum3.add(multiplier.mul(YMM_FLOAT.fromArray(right, k * n + j + 16)));
-              sum4 = sum4.add(multiplier.mul(YMM_FLOAT.fromArray(right, k * n + j + 24)));
-              sum5 = sum5.add(multiplier.mul(YMM_FLOAT.fromArray(right, k * n + j + 32)));
-              sum6 = sum6.add(multiplier.mul(YMM_FLOAT.fromArray(right, k * n + j + 40)));
-              sum7 = sum7.add(multiplier.mul(YMM_FLOAT.fromArray(right, k * n + j + 48)));
-              sum8 = sum8.add(multiplier.mul(YMM_FLOAT.fromArray(right, k * n + j + 56)));
+              sum1 = sum1.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j));
+              sum2 = sum2.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j + 8));
+              sum3 = sum3.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j + 16));
+              sum4 = sum4.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j + 24));
+              sum5 = sum5.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j + 32));
+              sum6 = sum6.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j + 40));
+              sum7 = sum7.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j + 48));
+              sum8 = sum8.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j + 56));
             }
             sum1.intoArray(result, i * n + j);
             sum2.intoArray(result, i * n + j + 8);
