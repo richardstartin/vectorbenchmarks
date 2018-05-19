@@ -3,10 +3,10 @@ package com.openkappa.panama.vectorbenchmarks;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import static com.openkappa.panama.vectorbenchmarks.Util.YMM_INT;
+import static com.openkappa.panama.vectorbenchmarks.Util.newIntBitmap;
 
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -24,9 +24,9 @@ public class BitmapLogicals {
 
   @Setup(Level.Iteration)
   public void init() {
-    this.left = newBitmap(size);
-    this.right = newBitmap(size);
-    this.result = newBitmap(size);
+    this.left = newIntBitmap(size);
+    this.right = newIntBitmap(size);
+    this.result = newIntBitmap(size);
   }
 
   @Benchmark
@@ -92,13 +92,5 @@ public class BitmapLogicals {
       YMM_INT.fromArray(left, i).and(YMM_INT.fromArray(right, i).not()).intoArray(result, i);
     }
     bh.consume(result);
-  }
-
-  private static int[] newBitmap(int size) {
-    int[] bitmap = new int[size];
-    for (int i = 0; i < bitmap.length; ++i) {
-      bitmap[i] = ThreadLocalRandom.current().nextInt();
-    }
-    return bitmap;
   }
 }

@@ -4,13 +4,14 @@ import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.Arrays;
-import java.util.concurrent.ThreadLocalRandom;
 
 import static com.openkappa.panama.vectorbenchmarks.Util.YMM_FLOAT;
+import static com.openkappa.panama.vectorbenchmarks.Util.newFloatRowMajorMatrix;
 
 @BenchmarkMode(Mode.Throughput)
 @State(Scope.Benchmark)
-@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector", "-XX:TypeProfileLevel=111", "-XX:-TieredCompilation"})
+@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector",
+        "-XX:TypeProfileLevel=111", "-XX:-TieredCompilation", "-Djdk.incubator.vector.VECTOR_ACCESS_OOB_CHECK=0"})
 public class FloatMatrixMatrixMultiplication {
 
 
@@ -23,9 +24,9 @@ public class FloatMatrixMatrixMultiplication {
 
   @Setup(Level.Iteration)
   public void init() {
-    this.left = newMatrix(size);
-    this.right = newMatrix(size);
-    this.result = newMatrix(size);
+    this.left = newFloatRowMajorMatrix(size);
+    this.right = newFloatRowMajorMatrix(size);
+    this.result = newFloatRowMajorMatrix(size);
   }
 
   @Benchmark
@@ -79,15 +80,6 @@ public class FloatMatrixMatrixMultiplication {
         }
       }
     }
-  }
-
-
-  private static float[] newMatrix(int size) {
-    float[] matrix = new float[size * size];
-    for (int i = 0; i < matrix.length; ++i) {
-      matrix[i] = ThreadLocalRandom.current().nextFloat();
-    }
-    return matrix;
   }
 
   public void fastBuffered(int n, float[] a, float[] b, float[] c) {

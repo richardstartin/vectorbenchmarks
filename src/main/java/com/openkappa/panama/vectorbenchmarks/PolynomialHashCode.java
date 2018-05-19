@@ -3,10 +3,10 @@ package com.openkappa.panama.vectorbenchmarks;
 
 import org.openjdk.jmh.annotations.*;
 
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import static com.openkappa.panama.vectorbenchmarks.Util.YMM_INT;
+import static com.openkappa.panama.vectorbenchmarks.Util.newIntVector;
 
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -31,7 +31,7 @@ public class PolynomialHashCode {
 
   @Setup(Level.Iteration)
   public void init() {
-    data = intArray(size);
+    data = newIntVector(size);
     this.coefficients = new int[size];
     coefficients[0] = 1;
     for (int i = 1; i < coefficients.length; ++i) {
@@ -59,15 +59,6 @@ public class PolynomialHashCode {
     }
 
     return acc.addAll();
-  }
-
-
-  private static int[] intArray(int size) {
-    int[] array = new int[size];
-    for (int i = 0; i < array.length; ++i) {
-      array[i] = ThreadLocalRandom.current().nextInt();
-    }
-    return array;
   }
 
 }

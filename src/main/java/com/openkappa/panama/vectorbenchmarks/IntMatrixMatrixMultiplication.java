@@ -4,9 +4,9 @@ import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.Arrays;
-import java.util.concurrent.ThreadLocalRandom;
 
 import static com.openkappa.panama.vectorbenchmarks.Util.YMM_INT;
+import static com.openkappa.panama.vectorbenchmarks.Util.newIntRowMatrix;
 
 @BenchmarkMode(Mode.Throughput)
 @State(Scope.Benchmark)
@@ -23,9 +23,9 @@ public class IntMatrixMatrixMultiplication {
 
   @Setup(Level.Iteration)
   public void init() {
-    this.left = newMatrix(size);
-    this.right = newMatrix(size);
-    this.result = newMatrix(size);
+    this.left = newIntRowMatrix(size);
+    this.right = newIntRowMatrix(size);
+    this.result = newIntRowMatrix(size);
   }
 
   @Benchmark
@@ -79,15 +79,6 @@ public class IntMatrixMatrixMultiplication {
         }
       }
     }
-  }
-
-
-  private static int[] newMatrix(int size) {
-    int[] matrix = new int[size * size];
-    for (int i = 0; i < matrix.length; ++i) {
-      matrix[i] = ThreadLocalRandom.current().nextInt();
-    }
-    return matrix;
   }
 
   public void fastBuffered(int n, int[] a, int[] b, int[] c) {

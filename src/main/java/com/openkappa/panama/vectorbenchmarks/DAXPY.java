@@ -7,6 +7,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import static com.openkappa.panama.vectorbenchmarks.Util.YMM_DOUBLE;
+import static com.openkappa.panama.vectorbenchmarks.Util.newDoubleVector;
 
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -24,7 +25,7 @@ public class DAXPY {
 
   @Setup(Level.Iteration)
   public void init() {
-    data = new double[size];
+    data = newDoubleVector(size);
     out = new double[size];
     for (int i = 0; i < s; ++i) {
       data[i] = ThreadLocalRandom.current().nextDouble();

@@ -2,10 +2,10 @@ package com.openkappa.panama.vectorbenchmarks;
 
 import org.openjdk.jmh.annotations.*;
 
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import static com.openkappa.panama.vectorbenchmarks.Util.YMM_FLOAT;
+import static com.openkappa.panama.vectorbenchmarks.Util.newFloatVector;
 
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -21,7 +21,7 @@ public class HorizontalSum {
 
   @Setup(Level.Iteration)
   public void init() {
-    this.data = newVector(size);
+    this.data = newFloatVector(size);
   }
 
   @Benchmark
@@ -55,13 +55,5 @@ public class HorizontalSum {
       s7 += data[i + 7];
     }
     return s0 + s1 + s2 + s3 + s4 + s5 + s6 + s7;
-  }
-
-  private static float[] newVector(int size) {
-    float[] matrix = new float[size];
-    for (int i = 0; i < matrix.length; ++i) {
-      matrix[i] = ThreadLocalRandom.current().nextFloat();
-    }
-    return matrix;
   }
 }
