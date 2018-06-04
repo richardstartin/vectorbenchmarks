@@ -10,10 +10,23 @@ import static com.openkappa.panama.vectorbenchmarks.Util.newFloatVector;
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Benchmark)
-@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector", "-XX:TypeProfileLevel=111", "-Djdk.incubator.vector.VECTOR_ACCESS_OOB_CHECK=0"})
+@Fork(value = 1, jvmArgsPrepend = {
+        "--add-modules=jdk.incubator.vector",
+        "-XX:TypeProfileLevel=111",
+        "-Djdk.incubator.vector.VECTOR_ACCESS_OOB_CHECK=0"
+})
 public class DotProduct {
 
-  @Param({"1024", "2048", "3072", "4096", "6144", "7168", "8192", "65536"})
+  @Param({
+          "1024",
+          "2048",
+          "3072",
+          "4096",
+          "6144",
+          "7168",
+          "8192",
+          "65536"
+  })
   int size;
 
   private float[] left;
@@ -23,10 +36,6 @@ public class DotProduct {
   public void init() {
     this.left = newFloatVector(size);
     this.right = newFloatVector(size);
-    System.out.println("Vector: " + vector());
-    System.out.println("Vector unrolled" + vectorUnrolled());
-    System.out.println("Unrolled: " + unrolled());
-    System.out.println("Vanilla: " + vanilla());
   }
 
   @Benchmark
@@ -35,13 +44,36 @@ public class DotProduct {
     for (int i = 0; i < size; i += YMM_FLOAT.length()) {
       var l = YMM_FLOAT.fromArray(left, i);
       var r = YMM_FLOAT.fromArray(right, i);
-      sum = sum.add(l.mul(r));
+      sum = l.fma(r, sum);
     }
     return sum.addAll();
   }
 
   @Benchmark
-  public float vectorUnrolled() {
+  @Threads(1)
+  public float vectorUnrolled1() {
+    return vectorUnrolled();
+  }
+
+  @Benchmark
+  @Threads(2)
+  public float vectorUnrolled2() {
+    return vectorUnrolled();
+  }
+
+  @Benchmark
+  @Threads(4)
+  public float vectorUnrolled4() {
+    return vectorUnrolled();
+  }
+
+  @Benchmark
+  @Threads(8)
+  public float vectorUnrolled8() {
+    return vectorUnrolled();
+  }
+
+  private float vectorUnrolled() {
     var sum1 = YMM_FLOAT.zero();
     var sum2 = YMM_FLOAT.zero();
     var sum3 = YMM_FLOAT.zero();

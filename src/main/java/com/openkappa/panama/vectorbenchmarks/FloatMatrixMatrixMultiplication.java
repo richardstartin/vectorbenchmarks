@@ -59,14 +59,14 @@ public class FloatMatrixMatrixMultiplication {
             var sum8 = YMM_FLOAT.fromArray(result, i * n + j + 56);
             for (int k = rowOffset; k < rowOffset + blockHeight && k < n; ++k) {
               var multiplier = YMM_FLOAT.broadcast(left[i * n + k]);
-              sum1 = sum1.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j));
-              sum2 = sum2.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j + 8));
-              sum3 = sum3.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j + 16));
-              sum4 = sum4.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j + 24));
-              sum5 = sum5.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j + 32));
-              sum6 = sum6.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j + 40));
-              sum7 = sum7.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j + 48));
-              sum8 = sum8.fma(multiplier, YMM_FLOAT.fromArray(right, k * n + j + 56));
+              sum1 = multiplier.fma(YMM_FLOAT.fromArray(right, k * n + j), sum1);
+              sum2 = multiplier.fma(YMM_FLOAT.fromArray(right, k * n + j + 8), sum2);
+              sum3 = multiplier.fma(YMM_FLOAT.fromArray(right, k * n + j + 16), sum3);
+              sum4 = multiplier.fma(YMM_FLOAT.fromArray(right, k * n + j + 24), sum4);
+              sum5 = multiplier.fma(YMM_FLOAT.fromArray(right, k * n + j + 32), sum5);
+              sum6 = multiplier.fma(YMM_FLOAT.fromArray(right, k * n + j + 40), sum6);
+              sum7 = multiplier.fma(YMM_FLOAT.fromArray(right, k * n + j + 48), sum7);
+              sum8 = multiplier.fma(YMM_FLOAT.fromArray(right, k * n + j + 56), sum8);
             }
             sum1.intoArray(result, i * n + j);
             sum2.intoArray(result, i * n + j + 8);

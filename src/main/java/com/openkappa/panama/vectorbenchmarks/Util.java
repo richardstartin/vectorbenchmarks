@@ -72,4 +72,7 @@ public class Util {
 
   public static final LongVector.LongSpecies<Shapes.S256Bit> YMM_LONG =
           (LongVector.LongSpecies<Shapes.S256Bit>) Vector.species(long.class, Shapes.S_256_BIT);
+
+  public static final ByteVector.ByteSpecies<Shapes.S256Bit> YMM_BYTE =
+          (ByteVector.ByteSpecies<Shapes.S256Bit>) Vector.species(byte.class, Shapes.S_256_BIT);
 }
