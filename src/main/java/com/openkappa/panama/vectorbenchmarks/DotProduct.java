@@ -18,13 +18,21 @@ import static com.openkappa.panama.vectorbenchmarks.Util.newFloatVector;
 public class DotProduct {
 
   @Param({
+          "128",
+          "256",
+          "512",
           "1024",
           "2048",
           "3072",
+          "4064",
           "4096",
+          "4128",
           "6144",
           "7168",
           "8192",
+          "8192",
+          "16384",
+          "32768",
           "65536"
   })
   int size;
@@ -80,10 +88,10 @@ public class DotProduct {
     var sum4 = YMM_FLOAT.zero();
     int width = YMM_FLOAT.length();
     for (int i = 0; i < size; i += width * 4) {
-      sum1 = sum1.add(YMM_FLOAT.fromArray(left, i).mul(YMM_FLOAT.fromArray(right, i)));
-      sum2 = sum2.add(YMM_FLOAT.fromArray(left, i + width).mul(YMM_FLOAT.fromArray(right, i + width)));
-      sum3 = sum3.add(YMM_FLOAT.fromArray(left, i + width * 2).mul(YMM_FLOAT.fromArray(right, i + width * 2)));
-      sum4 = sum4.add(YMM_FLOAT.fromArray(left, i + width * 3).mul(YMM_FLOAT.fromArray(right, i + width * 3)));
+      sum1 = YMM_FLOAT.fromArray(left, i).fma(YMM_FLOAT.fromArray(right, i), sum1);
+      sum2 = YMM_FLOAT.fromArray(left, i + width).fma(YMM_FLOAT.fromArray(right, i + width), sum2);
+      sum3 = YMM_FLOAT.fromArray(left, i + width * 2).fma(YMM_FLOAT.fromArray(right, i + width * 2), sum3);
+      sum4 = YMM_FLOAT.fromArray(left, i + width * 3).fma(YMM_FLOAT.fromArray(right, i + width * 3), sum4);
     }
     return sum1.addAll() + sum2.addAll() + sum3.addAll() + sum4.addAll();
   }
@@ -99,14 +107,14 @@ public class DotProduct {
     float s6 = 0f;
     float s7 = 0f;
     for (int i = 0; i < size; i += 8) {
-      s0 += left[i] * right[i];
-      s1 += left[i + 1] * right[i + 1];
-      s2 += left[i + 2] * right[i + 2];
-      s3 += left[i + 3] * right[i + 3];
-      s4 += left[i + 4] * right[i + 4];
-      s5 += left[i + 5] * right[i + 5];
-      s6 += left[i + 6] * right[i + 6];
-      s7 += left[i + 7] * right[i + 7];
+      s0 = Math.fma(left[i + 0],  right[i + 0], s0);
+      s1 = Math.fma(left[i + 1],  right[i + 1], s1);
+      s2 = Math.fma(left[i + 2],  right[i + 2], s2);
+      s3 = Math.fma(left[i + 3],  right[i + 3], s3);
+      s4 = Math.fma(left[i + 4],  right[i + 4], s4);
+      s5 = Math.fma(left[i + 5],  right[i + 5], s5);
+      s6 = Math.fma(left[i + 6],  right[i + 6], s6);
+      s7 = Math.fma(left[i + 7],  right[i + 7], s7);
     }
     return s0 + s1 + s2 + s3 + s4 + s5 + s6 + s7;
   }
@@ -115,7 +123,7 @@ public class DotProduct {
   public float vanilla() {
     float sum = 0f;
     for (int i = 0; i < size; ++i) {
-      sum += left[i] * right[i];
+      sum = Math.fma(left[i], right[i], sum);
     }
     return sum;
   }
