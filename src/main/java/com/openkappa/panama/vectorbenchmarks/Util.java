@@ -61,6 +61,9 @@ public class Util {
     return bitmap;
   }
 
+  public static final IntVector.IntSpecies<Shapes.S128Bit> XMM_INT =
+          (IntVector.IntSpecies<Shapes.S128Bit>) Vector.species(int.class, Shapes.S_128_BIT);
+
   public static final IntVector.IntSpecies<Shapes.S256Bit> YMM_INT =
           (IntVector.IntSpecies<Shapes.S256Bit>) Vector.species(int.class, Shapes.S_256_BIT);
 
