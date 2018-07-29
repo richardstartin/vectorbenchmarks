@@ -47,8 +47,8 @@ public class DAXPY {
   @Benchmark
   public void daxpyPanamaFMA(Blackhole bh) {
     for (int i = 0; i < data.length; i += YMM_DOUBLE.length()) {
-      YMM_DOUBLE.fromArray(out, i)
-              .fma(YMM_DOUBLE.fromArray(data, i), YMM_DOUBLE.broadcast(s))
+      YMM_DOUBLE.fromArray(data, i)
+              .fma(YMM_DOUBLE.broadcast(s), YMM_DOUBLE.fromArray(out, i))
               .intoArray(out, i);
     }
     bh.consume(out);

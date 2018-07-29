@@ -2,6 +2,8 @@ package com.openkappa.panama.vectorbenchmarks;
 
 import jdk.incubator.vector.*;
 
+import java.nio.ByteOrder ;
+import java.nio.ByteBuffer;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Util {
@@ -57,6 +59,14 @@ public class Util {
     long[] bitmap = new long[size];
     for (int i = 0; i < bitmap.length; ++i) {
       bitmap[i] = ThreadLocalRandom.current().nextLong();
+    }
+    return bitmap;
+  }
+
+  public static ByteBuffer newDirectBitmap(int size) {
+    ByteBuffer bitmap = ByteBuffer.allocateDirect(size * Long.BYTES).order(ByteOrder.nativeOrder( ));
+    for (int i = 0; i < size * Long.BYTES; i += 8) {
+      bitmap.putLong(i, ThreadLocalRandom.current().nextLong());
     }
     return bitmap;
   }
