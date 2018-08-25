@@ -4,9 +4,17 @@ import jdk.incubator.vector.*;
 
 import java.nio.ByteOrder ;
 import java.nio.ByteBuffer;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Util {
+
+  public static byte[] newByteArray(int size) {
+    byte[] array = new byte[size];
+    ThreadLocalRandom.current().nextBytes(array);
+    return array;
+  }
+
   public static float[] newFloatVector(int size) {
     float[] vector = new float[size];
     for (int i = 0; i < vector.length; ++i) {
@@ -88,4 +96,7 @@ public class Util {
 
   public static final ByteVector.ByteSpecies<Shapes.S256Bit> YMM_BYTE =
           (ByteVector.ByteSpecies<Shapes.S256Bit>) Vector.species(byte.class, Shapes.S_256_BIT);
+
+  public static final ByteVector.ByteSpecies<Shapes.S128Bit> XMM_BYTE =
+          (ByteVector.ByteSpecies<Shapes.S128Bit>) Vector.species(byte.class, Shapes.S_128_BIT);
 }
