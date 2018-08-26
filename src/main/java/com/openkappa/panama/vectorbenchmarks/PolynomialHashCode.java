@@ -20,6 +20,7 @@ public class PolynomialHashCode {
 
   private int[] coefficients;
   private int[] data;
+  private int seed;
   private static final int[] POWERS_OF_31 = new int[] {
           1,
           31,
@@ -36,25 +37,25 @@ public class PolynomialHashCode {
     PolynomialHashCode hc = new PolynomialHashCode();
     hc.size = 1024;
     hc.init();
-    System.out.println(Arrays.toString(hc.coefficients));
+    System.out.println(hc.arraysHashCode());
     System.out.println(hc.hashCodeAutoVectorised());
-    System.out.println(hc.polynomialHashCodeUnrolled());
-
+    System.out.println(hc.polynomialHashCode());
   }
 
   @Setup(Level.Iteration)
   public void init() {
     data = newIntVector(size);
     this.coefficients = new int[size];
-    coefficients[0] = 1;
-    for (int i = 1; i < coefficients.length; ++i) {
-      coefficients[i] = 31 * coefficients[i - 1];
+    coefficients[size - 1] = 1;
+    for (int i = size - 2; i >= 0; --i) {
+      coefficients[i] = 31 * coefficients[i + 1];
     }
+    seed = 31 * coefficients[0];
   }
 
   @Benchmark
   public int hashCodeAutoVectorised() {
-    int result = 0;
+    int result = seed;
     for (int i = 0; i < data.length && i < coefficients.length; ++i) {
       result += coefficients[i] * data[i];
     }
@@ -69,14 +70,22 @@ public class PolynomialHashCode {
   @Benchmark
   public int polynomialHashCode() {
     var next = YMM_INT.broadcast(POWERS_OF_31[8]);
-    var coefficients = YMM_INT.fromArray(POWERS_OF_31, 0);
+    var coefficients = YMM_INT.scalars(
+            31 * 31 * 31 * 31 * 31 * 31 * 31,
+            31 * 31 * 31 * 31 * 31 * 31,
+            31 * 31 * 31 * 31 * 31,
+            31 * 31 * 31 * 31,
+            31 * 31 * 31,
+            31 * 31,
+            31,
+            1
+    );
     var acc = YMM_INT.zero();
-    for (int i = 0; i < data.length; i += YMM_INT.length()) {
-      acc = acc.add(coefficients.mul(YMM_INT.fromArray(data, i)));
+    for (int i = data.length; i - YMM_INT.length() >= 0; i -= YMM_INT.length()) {
+      acc = acc.add(coefficients.mul(YMM_INT.fromArray(data, i - YMM_INT.length())));
       coefficients = coefficients.mul(next);
     }
-
-    return acc.addAll();
+    return acc.addAll() + coefficients.get(7);
   }
 
   @Benchmark
