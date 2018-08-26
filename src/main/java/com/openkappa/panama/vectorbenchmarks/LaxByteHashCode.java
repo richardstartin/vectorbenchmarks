@@ -40,7 +40,8 @@ public class LaxByteHashCode {
           31 * 31 * 31 * 31,
           31 * 31 * 31 * 31 * 31,
           31 * 31 * 31 * 31 * 31 * 31,
-          31 * 31 * 31 * 31 * 31 * 31 * 31
+          31 * 31 * 31 * 31 * 31 * 31 * 31,
+          31 * 31 * 31 * 31 * 31 * 31 * 31 * 31
   };
 
   @Param({"128", "256", "512", "1024"})
@@ -60,7 +61,7 @@ public class LaxByteHashCode {
 
   @Benchmark
   public int hashCodeVectorAPIDependencies() {
-    var next = YMM_INT.broadcast(31 * 31 * 31 * 31 * 31 * 31 * 31 * 31);
+    var next = YMM_INT.broadcast(POWERS_OF_31[8]);
     var coefficients = YMM_INT.fromArray(POWERS_OF_31, 0);
     var acc = YMM_INT.zero();
     for (int i = 0; i < data.length; i += YMM_BYTE.length()) {
@@ -72,7 +73,7 @@ public class LaxByteHashCode {
 
   @Benchmark
   public int hashCodeVectorAPINoDependencies() {
-    var next = YMM_INT.broadcast(31 * 31 * 31 * 31 * 31 * 31 * 31 * 31);
+    var next = YMM_INT.broadcast(POWERS_OF_31[8]);
     var coefficients1 = YMM_INT.fromArray(POWERS_OF_31, 0);
     var coefficients2 = coefficients1.mul(next);
     var coefficients3 = coefficients2.mul(next);

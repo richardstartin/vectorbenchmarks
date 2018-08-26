@@ -28,7 +28,8 @@ public class PolynomialHashCode {
           31 * 31 * 31 * 31,
           31 * 31 * 31 * 31 * 31,
           31 * 31 * 31 * 31 * 31 * 31,
-          31 * 31 * 31 * 31 * 31 * 31 * 31
+          31 * 31 * 31 * 31 * 31 * 31 * 31,
+          31 * 31 * 31 * 31 * 31 * 31 * 31 * 31
   };
 
   public static void main(String[] args) {
@@ -67,7 +68,7 @@ public class PolynomialHashCode {
 
   @Benchmark
   public int polynomialHashCode() {
-    var next = YMM_INT.broadcast(31 * 31 * 31 * 31 * 31 * 31 * 31 * 31);
+    var next = YMM_INT.broadcast(POWERS_OF_31[8]);
     var coefficients = YMM_INT.fromArray(POWERS_OF_31, 0);
     var acc = YMM_INT.zero();
     for (int i = 0; i < data.length; i += YMM_INT.length()) {
@@ -80,7 +81,7 @@ public class PolynomialHashCode {
 
   @Benchmark
   public int polynomialHashCodeUnrolled() {
-    var next = YMM_INT.broadcast(31 * 31 * 31 * 31 * 31 * 31 * 31 * 31);
+    var next = YMM_INT.broadcast(POWERS_OF_31[8]);
     var coefficients1 = YMM_INT.fromArray(POWERS_OF_31, 0);
     var coefficients2 = coefficients1.mul(next);
     var coefficients3 = coefficients2.mul(next);
