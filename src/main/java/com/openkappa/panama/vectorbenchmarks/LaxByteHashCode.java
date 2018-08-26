@@ -32,20 +32,25 @@ public class LaxByteHashCode {
     }
   }
 
+  private static final int[] POWERS_OF_31 = new int[] {
+          1,
+          31,
+          31 * 31,
+          31 * 31 * 31,
+          31 * 31 * 31 * 31,
+          31 * 31 * 31 * 31 * 31,
+          31 * 31 * 31 * 31 * 31 * 31,
+          31 * 31 * 31 * 31 * 31 * 31 * 31
+  };
+
   @Param({"128", "256", "512", "1024"})
   int size;
 
   byte[] data;
-  int[] coefficients;
 
   @Setup(Level.Trial)
   public void setup() {
     data = newByteArray(size);
-    this.coefficients = new int[size / 8];
-    coefficients[0] = 1;
-    for (int i = 1; i < coefficients.length; ++i) {
-      coefficients[i] = 31 * coefficients[i - 1];
-    }
   }
 
   @Benchmark
@@ -56,7 +61,7 @@ public class LaxByteHashCode {
   @Benchmark
   public int hashCodeVectorAPIDependencies() {
     var next = YMM_INT.broadcast(31 * 31 * 31 * 31 * 31 * 31 * 31 * 31);
-    var coefficients = YMM_INT.fromArray(this.coefficients, 0);
+    var coefficients = YMM_INT.fromArray(POWERS_OF_31, 0);
     var acc = YMM_INT.zero();
     for (int i = 0; i < data.length; i += YMM_BYTE.length()) {
       acc = acc.add(coefficients.mul(YMM_BYTE.fromArray(data, i).rebracket(YMM_INT)));
@@ -68,7 +73,7 @@ public class LaxByteHashCode {
   @Benchmark
   public int hashCodeVectorAPINoDependencies() {
     var next = YMM_INT.broadcast(31 * 31 * 31 * 31 * 31 * 31 * 31 * 31);
-    var coefficients1 = YMM_INT.fromArray(this.coefficients, 0);
+    var coefficients1 = YMM_INT.fromArray(POWERS_OF_31, 0);
     var coefficients2 = coefficients1.mul(next);
     var coefficients3 = coefficients2.mul(next);
     var coefficients4 = coefficients3.mul(next);

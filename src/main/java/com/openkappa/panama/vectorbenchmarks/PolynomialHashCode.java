@@ -20,6 +20,26 @@ public class PolynomialHashCode {
 
   private int[] coefficients;
   private int[] data;
+  private static final int[] POWERS_OF_31 = new int[] {
+          1,
+          31,
+          31 * 31,
+          31 * 31 * 31,
+          31 * 31 * 31 * 31,
+          31 * 31 * 31 * 31 * 31,
+          31 * 31 * 31 * 31 * 31 * 31,
+          31 * 31 * 31 * 31 * 31 * 31 * 31
+  };
+
+  public static void main(String[] args) {
+    PolynomialHashCode hc = new PolynomialHashCode();
+    hc.size = 1024;
+    hc.init();
+    System.out.println(Arrays.toString(hc.coefficients));
+    System.out.println(hc.hashCodeAutoVectorised());
+    System.out.println(hc.polynomialHashCodeUnrolled());
+
+  }
 
   @Setup(Level.Iteration)
   public void init() {
@@ -48,7 +68,7 @@ public class PolynomialHashCode {
   @Benchmark
   public int polynomialHashCode() {
     var next = YMM_INT.broadcast(31 * 31 * 31 * 31 * 31 * 31 * 31 * 31);
-    var coefficients = YMM_INT.fromArray(this.coefficients, 0);
+    var coefficients = YMM_INT.fromArray(POWERS_OF_31, 0);
     var acc = YMM_INT.zero();
     for (int i = 0; i < data.length; i += YMM_INT.length()) {
       acc = acc.add(coefficients.mul(YMM_INT.fromArray(data, i)));
@@ -61,7 +81,7 @@ public class PolynomialHashCode {
   @Benchmark
   public int polynomialHashCodeUnrolled() {
     var next = YMM_INT.broadcast(31 * 31 * 31 * 31 * 31 * 31 * 31 * 31);
-    var coefficients1 = YMM_INT.fromArray(this.coefficients, 0);
+    var coefficients1 = YMM_INT.fromArray(POWERS_OF_31, 0);
     var coefficients2 = coefficients1.mul(next);
     var coefficients3 = coefficients2.mul(next);
     var coefficients4 = coefficients3.mul(next);
