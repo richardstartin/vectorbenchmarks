@@ -19,6 +19,13 @@ public class IntersectionCardinality {
   @Param({"1024"})
   int size;
 
+  public static void main(String[] args) {
+    IntersectionCardinality ic = new IntersectionCardinality();
+    ic.fill();
+    System.out.println(ic.popcnt());
+    System.out.println(ic.vpandExtractPopcntUnrolled());
+  }
+
   private final long[] left = new long[1024];
   private final long[] right = new long[1024];
   private long[] buffer = new long[64];
@@ -30,7 +37,7 @@ public class IntersectionCardinality {
   }
 
   @Benchmark
-  public int vanilla() {
+  public int popcnt() {
     int cardinality = 0;
     for (int i = 0; i < size && i < left.length && i < right.length; ++i) {
       cardinality += Long.bitCount(left[i] & right[i]);
@@ -39,7 +46,7 @@ public class IntersectionCardinality {
   }
 
   @Benchmark
-  public int unrolled() {
+  public int unrolledPopcnt() {
     int cardinality1 = 0;
     int cardinality2 = 0;
     int cardinality3 = 0;
@@ -54,7 +61,7 @@ public class IntersectionCardinality {
   }
 
   @Benchmark
-  public int mixed() {
+  public int vpandStorePopcnt() {
     long[] intersections = buffer;
     int cardinality = 0;
     for (int i = 0; i < size && i < left.length && i < right.length; i += 4) {
@@ -67,9 +74,8 @@ public class IntersectionCardinality {
     return cardinality;
   }
 
-
   @Benchmark
-  public int mixedUnrolled() {
+  public int vpandStorePopcntUnrolled() {
     long[] intersections = buffer;
     int cardinality1 = 0;
     int cardinality2 = 0;
@@ -89,21 +95,37 @@ public class IntersectionCardinality {
     return cardinality1 + cardinality2 + cardinality3;
   }
 
-
   @Benchmark
-  public int mixedStagedLoop() {
-    long[] intersections = buffer;
+  public int vpandExtractPopcnt() {
     int cardinality = 0;
-    for (int i = 0; i < size && i < left.length && i < right.length; i += 64) {
-      for (int j = 0; j < 64; j += 4) {
-        YMM_LONG.fromArray(left, i + j).and(YMM_LONG.fromArray(right, i + j)).intoArray(intersections, j);
-      }
-      for (int j = 0; j < 64; ++j) {
-        cardinality += Long.bitCount(intersections[j]);
-      }
+    for (int i = 0; i < size && i < left.length && i < right.length; i += 4) {
+      var intersection = YMM_LONG.fromArray(left, i).and(YMM_LONG.fromArray(right, i));
+      cardinality += Long.bitCount(intersection.get(0));
+      cardinality += Long.bitCount(intersection.get(1));
+      cardinality += Long.bitCount(intersection.get(2));
+      cardinality += Long.bitCount(intersection.get(3));
     }
     return cardinality;
   }
 
+  @Benchmark
+  public int vpandExtractPopcntUnrolled() {
+    int cardinality1 = 0;
+    int cardinality2 = 0;
+    int cardinality3 = 0;
+    for (int i = 0; i < size && i < left.length && i < right.length; i += 8) {
+      var intersection1 = YMM_LONG.fromArray(left, i).and(YMM_LONG.fromArray(right, i));
+      var intersection2 = YMM_LONG.fromArray(left, i + 4).and(YMM_LONG.fromArray(right, i + 4));
+      cardinality1 += Long.bitCount(intersection1.get(0));
+      cardinality2 += Long.bitCount(intersection1.get(1));
+      cardinality3 += Long.bitCount(intersection1.get(2));
+      cardinality1 += Long.bitCount(intersection1.get(3));
+      cardinality2 += Long.bitCount(intersection2.get(0));
+      cardinality3 += Long.bitCount(intersection2.get(1));
+      cardinality1 += Long.bitCount(intersection2.get(2));
+      cardinality2 += Long.bitCount(intersection2.get(3));
+    }
+    return cardinality1 + cardinality2 + cardinality3;
+  }
 
 }
