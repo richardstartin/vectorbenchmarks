@@ -99,4 +99,10 @@ public class Util {
 
   public static final ByteVector.ByteSpecies<Shapes.S128Bit> XMM_BYTE =
           (ByteVector.ByteSpecies<Shapes.S128Bit>) Vector.species(byte.class, Shapes.S_128_BIT);
+
+  public static final ShortVector.ShortSpecies<Shapes.S128Bit> XMM_SHORT =
+          (ShortVector.ShortSpecies<Shapes.S128Bit>) Vector.species(short.class, Shapes.S_128_BIT);
+
+  public static final LongVector.LongSpecies<Shapes.S128Bit> XMM_LONG =
+          (LongVector.LongSpecies<Shapes.S128Bit>) Vector.species(long.class, Shapes.S_128_BIT);
 }
