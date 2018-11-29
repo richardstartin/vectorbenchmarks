@@ -2,9 +2,9 @@ package com.openkappa.panama.vectorbenchmarks;
 
 import jdk.incubator.vector.*;
 
-import java.nio.ByteOrder ;
 import java.nio.ByteBuffer;
-import java.util.Random;
+import java.nio.ByteOrder;
+import java.util.SplittableRandom;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Util {
@@ -23,12 +23,63 @@ public class Util {
     return vector;
   }
 
+
+  public static float[] newFloatVector(int size, double probabilityOfNaN) {
+    SplittableRandom random = new SplittableRandom(0);
+    float[] vector = newFloatVector(size);
+    for (int i = 0; i < vector.length; ++i) {
+      if (random.nextDouble() < probabilityOfNaN) {
+        vector[i] = Float.NaN;
+      }
+    }
+    return vector;
+  }
+
+  public static ByteBuffer newFloatBuffer(int size, double probabilityOfNaN) {
+    SplittableRandom random = new SplittableRandom(0);
+    ByteBuffer buffer = allocateDirectAligned(size * 2, 64);
+    for (int i = 0; i < size; i += 2) {
+      double value = random.nextDouble();
+      if (value < probabilityOfNaN) {
+        buffer.putFloat(i, Float.NaN);
+      } else {
+        buffer.putFloat(i, (float)value);
+      }
+    }
+    return buffer;
+  }
+
   public static double[] newDoubleVector(int size) {
     double[] vector = new double[size];
     for (int i = 0; i < vector.length; ++i) {
       vector[i] = ThreadLocalRandom.current().nextDouble();
     }
     return vector;
+  }
+
+  public static double[] newDoubleVector(int size, double probabilityOfNaN) {
+    SplittableRandom random = new SplittableRandom(0);
+    double[] vector = newDoubleVector(size);
+    for (int i = 0; i < vector.length; ++i) {
+      if (random.nextDouble() < probabilityOfNaN) {
+        vector[i] = Double.NaN;
+      }
+    }
+    return vector;
+  }
+
+  public static ByteBuffer newDoubleBuffer(int size, double probabilityOfNaN) {
+    SplittableRandom random = new SplittableRandom(0);
+    ByteBuffer buffer = allocateDirectAligned(size * 4, 64);
+    for (int i = 0; i < size; i += 4) {
+      double value = random.nextDouble();
+      if (value < probabilityOfNaN) {
+        buffer.putDouble(i, Double.NaN);
+      } else {
+        buffer.putDouble(i, value);
+      }
+    }
+    return buffer;
   }
 
   public static int[] newIntVector(int size) {
@@ -105,4 +156,15 @@ public class Util {
 
   public static final LongVector.LongSpecies<Shapes.S128Bit> XMM_LONG =
           (LongVector.LongSpecies<Shapes.S128Bit>) Vector.species(long.class, Shapes.S_128_BIT);
+
+  public static ByteBuffer allocateDirectAligned(final int capacity, final int alignment) {
+    ByteBuffer buffer = ByteBuffer.allocateDirect(capacity + alignment).order(ByteOrder.nativeOrder( ));
+//    long address = ((sun.nio.ch.DirectBuffer)buffer).address();
+//    int remainder = (int)(address & (alignment - 1));
+//    int offset = alignment - remainder;
+//    buffer.limit(capacity + offset);
+//    buffer.position(offset);
+//    return buffer.slice();
+    return buffer;
+  }
 }
