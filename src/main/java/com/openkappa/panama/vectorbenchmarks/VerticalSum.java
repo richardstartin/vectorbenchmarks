@@ -11,7 +11,10 @@ import static com.openkappa.panama.vectorbenchmarks.Util.*;
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Fork(value = 3, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector", "-XX:TypeProfileLevel=111",
-        "-XX:-TieredCompilation", "-Djdk.incubator.vector.VECTOR_ACCESS_OOB_CHECK=0"})
+        "-XX:-TieredCompilation",
+        "-XX:+UseVectorCmov",
+        "-XX:+UseCMoveUnconditionally",
+        "-Djdk.incubator.vector.VECTOR_ACCESS_OOB_CHECK=0"})
 public class VerticalSum {
 
   @State(Scope.Benchmark)

@@ -2,7 +2,6 @@ package com.openkappa.panama.vectorbenchmarks;
 
 
 import jdk.incubator.vector.ByteVector;
-import jdk.incubator.vector.Shapes;
 import org.openjdk.jmh.annotations.*;
 
 import static com.openkappa.panama.vectorbenchmarks.Util.XMM_BYTE;
@@ -61,7 +60,7 @@ public class StreamVByte {
   }
 
 
-  static int streamVByteEncode4(ByteVector<Shapes.S128Bit> in,
+  static int streamVByteEncode4(ByteVector in,
                                  byte[] data, int di,
                                  byte[] keys, int ki) {
     var ones = XMM_INT.broadcast(0x01010101).rebracket(XMM_BYTE);
@@ -71,7 +70,7 @@ public class StreamVByte {
     var aggregators = XMM_INT.scalars(0, 0, 0x01010101, 0x10400104).rebracket(XMM_SHORT);
 
     // in general wrong because there are no unsigned types, but correct some of the time
-    var m1 = (ByteVector<Shapes.S128Bit>) in.min(ones)
+    var m1 = (ByteVector) in.min(ones)
                .rebracket(XMM_SHORT)
                .add(gatherBits)
                .rebracket(XMM_BYTE)
@@ -90,7 +89,7 @@ public class StreamVByte {
   }
 
   static int streamVByteEncodeQuad(int[] in, int ii, byte[] out, int oi, byte[] keys, int ki) {
-    return streamVByteEncode4((ByteVector<Shapes.S128Bit>) XMM_INT.fromArray(in, ii).rebracket(XMM_BYTE), out, oi, keys, ki);
+    return streamVByteEncode4((ByteVector) XMM_INT.fromArray(in, ii).rebracket(XMM_BYTE), out, oi, keys, ki);
   }
 
 

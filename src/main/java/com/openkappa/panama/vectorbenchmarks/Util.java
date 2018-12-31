@@ -7,6 +7,9 @@ import java.nio.ByteOrder;
 import java.util.SplittableRandom;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static jdk.incubator.vector.Vector.Shape.S_128_BIT;
+import static jdk.incubator.vector.Vector.Shape.S_256_BIT;
+
 public class Util {
 
   public static byte[] newByteArray(int size) {
@@ -130,32 +133,32 @@ public class Util {
     return bitmap;
   }
 
-  public static final IntVector.IntSpecies<Shapes.S128Bit> XMM_INT =
-          (IntVector.IntSpecies<Shapes.S128Bit>) Vector.species(int.class, Shapes.S_128_BIT);
+  public static final IntVector.IntSpecies XMM_INT =
+          (IntVector.IntSpecies) Vector.species(int.class, S_128_BIT);
 
-  public static final IntVector.IntSpecies<Shapes.S256Bit> YMM_INT =
-          (IntVector.IntSpecies<Shapes.S256Bit>) Vector.species(int.class, Shapes.S_256_BIT);
+  public static final IntVector.IntSpecies YMM_INT =
+          (IntVector.IntSpecies) Vector.species(int.class, S_256_BIT);
 
-  public static final FloatVector.FloatSpecies<Shapes.S256Bit> YMM_FLOAT =
-          (FloatVector.FloatSpecies<Shapes.S256Bit>) Vector.species(float.class, Shapes.S_256_BIT);
+  public static final FloatVector.FloatSpecies YMM_FLOAT =
+          (FloatVector.FloatSpecies) Vector.species(float.class, S_256_BIT);
 
-  public static final DoubleVector.DoubleSpecies<Shapes.S256Bit> YMM_DOUBLE =
-          (DoubleVector.DoubleSpecies<Shapes.S256Bit>) Vector.species(double.class, Shapes.S_256_BIT);
+  public static final DoubleVector.DoubleSpecies YMM_DOUBLE =
+          (DoubleVector.DoubleSpecies) Vector.species(double.class, S_256_BIT);
 
-  public static final LongVector.LongSpecies<Shapes.S256Bit> YMM_LONG =
-          (LongVector.LongSpecies<Shapes.S256Bit>) Vector.species(long.class, Shapes.S_256_BIT);
+  public static final LongVector.LongSpecies YMM_LONG =
+          (LongVector.LongSpecies) Vector.species(long.class, S_256_BIT);
 
-  public static final ByteVector.ByteSpecies<Shapes.S256Bit> YMM_BYTE =
-          (ByteVector.ByteSpecies<Shapes.S256Bit>) Vector.species(byte.class, Shapes.S_256_BIT);
+  public static final ByteVector.ByteSpecies YMM_BYTE =
+          (ByteVector.ByteSpecies) Vector.species(byte.class, S_256_BIT);
 
-  public static final ByteVector.ByteSpecies<Shapes.S128Bit> XMM_BYTE =
-          (ByteVector.ByteSpecies<Shapes.S128Bit>) Vector.species(byte.class, Shapes.S_128_BIT);
+  public static final ByteVector.ByteSpecies XMM_BYTE =
+          (ByteVector.ByteSpecies) Vector.species(byte.class, S_128_BIT);
 
-  public static final ShortVector.ShortSpecies<Shapes.S128Bit> XMM_SHORT =
-          (ShortVector.ShortSpecies<Shapes.S128Bit>) Vector.species(short.class, Shapes.S_128_BIT);
+  public static final ShortVector.ShortSpecies XMM_SHORT =
+          (ShortVector.ShortSpecies) Vector.species(short.class, S_128_BIT);
 
-  public static final LongVector.LongSpecies<Shapes.S128Bit> XMM_LONG =
-          (LongVector.LongSpecies<Shapes.S128Bit>) Vector.species(long.class, Shapes.S_128_BIT);
+  public static final LongVector.LongSpecies XMM_LONG =
+          (LongVector.LongSpecies) Vector.species(long.class, S_128_BIT);
 
   public static ByteBuffer allocateDirectAligned(final int capacity, final int alignment) {
     ByteBuffer buffer = ByteBuffer.allocateDirect(capacity + alignment).order(ByteOrder.nativeOrder( ));
