@@ -4,6 +4,7 @@ import jdk.incubator.vector.*;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.SplittableRandom;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -90,6 +91,16 @@ public class Util {
     for (int i = 0; i < vector.length; ++i) {
       vector[i] = ThreadLocalRandom.current().nextInt();
     }
+    return vector;
+  }
+
+
+  public static int[] newSortedIntArray(int size, int max) {
+    int[] vector = new int[size];
+    for (int i = 0; i < vector.length; ++i) {
+      vector[i] = ThreadLocalRandom.current().nextInt(max);
+    }
+    Arrays.sort(vector);
     return vector;
   }
 

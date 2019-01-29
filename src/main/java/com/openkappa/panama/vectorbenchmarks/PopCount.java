@@ -1,6 +1,7 @@
 package com.openkappa.panama.vectorbenchmarks;
 
 import jdk.incubator.vector.ByteVector;
+import jdk.incubator.vector.IntVector;
 import jdk.incubator.vector.LongVector;
 import org.openjdk.jmh.annotations.*;
 
@@ -18,8 +19,6 @@ public class PopCount {
   @Param({"1024"})
   private int size;
 
-  private long[] data;
-
 
   public static void main(String... args) {
     PopCount benchmark = new PopCount();
@@ -27,7 +26,7 @@ public class PopCount {
     benchmark.init();
     System.out.println(benchmark.scalar());
     System.out.println(benchmark.vectorBitCount());
-    System.out.println(benchmark.harleySeal());
+//    System.out.println(benchmark.harleySeal());
   }
 
   @Setup(Level.Trial)
@@ -35,19 +34,56 @@ public class PopCount {
     data = newLongBitmap(size);
   }
 
+  private static byte[] NIBBLE_COUNTS = new byte[] {
+          0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4,
+          0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4
+  };
+
+  private long[] data;
+
   @Benchmark
   public int vectorBitCount() {
     int bitCount = 0;
-    for (int i = 0; i < data.length; i+= 4) {
-      bitCount += (int)((ByteVector)YMM_LONG.fromArray(data, i).rebracket(YMM_BYTE)).addAll();
+    int block = 256;
+    for (int i = 0; i < data.length; i += block) {
+      var lo = YMM_BYTE.zero();
+      var hi = YMM_BYTE.zero();
+      var counts = YMM_BYTE.fromArray(NIBBLE_COUNTS, 0);
+      for (int j = 0; j < block; j += 4) {
+        var v1 = (ByteVector)YMM_LONG.fromArray(data, i + j).rebracket(YMM_BYTE);
+        lo = lo.add(counts.rearrange(v1.and((byte)0x0F).toShuffle()));
+        hi = hi.add(counts.rearrange(v1.shiftR(4).and((byte)0x0F).toShuffle()));
+      }
+      bitCount += unsignedSum(lo);
+      bitCount += unsignedSum(hi);
     }
     return bitCount;
   }
 
-  @Benchmark
-  public int harleySeal() {
-    return harleySeal(data);
+  private int unsignedSum(ByteVector bv) {
+    // convert to LongVector because Vector.get is slow
+    var lv = (LongVector) bv.rebracket(YMM_LONG);
+    return sumBytes(lv.get(0))
+         + sumBytes(lv.get(1))
+         + sumBytes(lv.get(2))
+         + sumBytes(lv.get(3));
   }
+
+  private int sumBytes(long w) {
+    return ((int)w & 0xFF)
+            + (((int)(w >>> 8))  & 0xFF)
+            + (((int)(w >>> 16)) & 0xFF)
+            + (((int)(w >>> 24)) & 0xFF)
+            + (((int)(w >>> 32)) & 0xFF)
+            + (((int)(w >>> 40)) & 0xFF)
+            + (((int)(w >>> 48)) & 0xFF)
+            + (((int)(w >>> 56)) & 0xFF);
+  }
+
+//  @Benchmark
+//  public int harleySeal() {
+//    return harleySeal(data);
+//  }
 
 
   @Benchmark
@@ -182,17 +218,6 @@ public class PopCount {
     return (LongVector)lookupPos.rearrange(bytes.and(lowMask).toShuffle())
             .add(lookupNeg.rearrange(bytes.shiftR(4).and(lowMask).toShuffle()))
             .rebracket(YMM_LONG);
-  }
-
-
-  private int popcount256Reduced(LongVector vector) {
-    var bytes = (ByteVector)vector.rebracket(YMM_BYTE);
-    var lookupPos = YMM_BYTE.fromArray(LOOKUP_POS, 0);
-    var lookupNeg = YMM_BYTE.fromArray(LOOKUP_NEG, 0);
-    var lowMask = YMM_BYTE.broadcast((byte)0x0F);
-    return (int)((LongVector)lookupPos.rearrange(bytes.and(lowMask).toShuffle())
-            .add(lookupNeg.rearrange(bytes.shiftR(4).and(lowMask).toShuffle()))
-            .rebracket(YMM_LONG)).addAll();
   }
 
   private static byte[] LOOKUP_POS = new byte[] {
