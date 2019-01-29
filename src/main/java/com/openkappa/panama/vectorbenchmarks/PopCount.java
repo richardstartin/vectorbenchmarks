@@ -46,13 +46,13 @@ public class PopCount {
     int bitCount = 0;
     int block = 256;
     for (int i = 0; i < data.length; i += block) {
-      var lo = YMM_BYTE.zero();
-      var hi = YMM_BYTE.zero();
+      var lo = YMM_INT.zero();
+      var hi = YMM_INT.zero();
       var counts = YMM_BYTE.fromArray(NIBBLE_COUNTS, 0);
       for (int j = 0; j < block; j += 4) {
-        var v1 = (ByteVector)YMM_LONG.fromArray(data, i + j).rebracket(YMM_BYTE);
-        lo = lo.add(counts.rearrange(v1.and((byte)0x0F).toShuffle()));
-        hi = hi.add(counts.rearrange(v1.shiftR(4).and((byte)0x0F).toShuffle()));
+        var v1 = (IntVector)YMM_LONG.fromArray(data, i + j).rebracket(YMM_INT);
+        lo = lo.add(counts.rearrange(v1.and(0x0F0F0F0F).rebracket(YMM_BYTE).toShuffle()).rebracket(YMM_INT));
+        hi = hi.add(counts.rearrange(v1.shiftR(4).and(0x0F0F0F0F).rebracket(YMM_BYTE).toShuffle()).rebracket(YMM_INT));
       }
       bitCount += unsignedSum(lo);
       bitCount += unsignedSum(hi);
@@ -60,7 +60,7 @@ public class PopCount {
     return bitCount;
   }
 
-  private int unsignedSum(ByteVector bv) {
+  private int unsignedSum(IntVector bv) {
     // convert to LongVector because Vector.get is slow
     var lv = (LongVector) bv.rebracket(YMM_LONG);
     return sumBytes(lv.get(0))
