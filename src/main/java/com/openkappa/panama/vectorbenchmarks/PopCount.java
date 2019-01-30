@@ -5,6 +5,7 @@ import jdk.incubator.vector.IntVector;
 import jdk.incubator.vector.LongVector;
 import org.openjdk.jmh.annotations.*;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import static com.openkappa.panama.vectorbenchmarks.Util.*;
@@ -24,6 +25,7 @@ public class PopCount {
     PopCount benchmark = new PopCount();
     benchmark.size = 1024;
     benchmark.init();
+    Arrays.fill(benchmark.data, -1);
     System.out.println(benchmark.scalar());
     System.out.println(benchmark.vectorBitCount());
 //    System.out.println(benchmark.harleySeal());
@@ -39,23 +41,30 @@ public class PopCount {
           0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4
   };
 
-  private long[] data;
+  long[] data;
 
   @Benchmark
   public int vectorBitCount() {
     int bitCount = 0;
     int block = 256;
     for (int i = 0; i < data.length; i += block) {
-      var lo = YMM_INT.zero();
-      var hi = YMM_INT.zero();
+      var lo1 = YMM_INT.zero();
+      var hi1 = YMM_INT.zero();
+      var lo2 = YMM_INT.zero();
+      var hi2 = YMM_INT.zero();
       var counts = YMM_BYTE.fromArray(NIBBLE_COUNTS, 0);
-      for (int j = 0; j < block; j += 4) {
+      for (int j = 0; j < block; j += 8) {
         var v1 = (IntVector)YMM_LONG.fromArray(data, i + j).rebracket(YMM_INT);
-        lo = lo.add(counts.rearrange(v1.and(0x0F0F0F0F).rebracket(YMM_BYTE).toShuffle()).rebracket(YMM_INT));
-        hi = hi.add(counts.rearrange(v1.shiftR(4).and(0x0F0F0F0F).rebracket(YMM_BYTE).toShuffle()).rebracket(YMM_INT));
+        var v2 = (IntVector)YMM_LONG.fromArray(data, i + j + 4).rebracket(YMM_INT);
+        lo1 = lo1.add(counts.rearrange(v1.and(0x0F0F0F0F).rebracket(YMM_BYTE).toShuffle()).rebracket(YMM_INT));
+        hi1 = hi1.add(counts.rearrange(v1.shiftR(4).and(0x0F0F0F0F).rebracket(YMM_BYTE).toShuffle()).rebracket(YMM_INT));
+        lo2 = lo2.add(counts.rearrange(v2.and(0x0F0F0F0F).rebracket(YMM_BYTE).toShuffle()).rebracket(YMM_INT));
+        hi2 = hi2.add(counts.rearrange(v2.shiftR(4).and(0x0F0F0F0F).rebracket(YMM_BYTE).toShuffle()).rebracket(YMM_INT));
       }
-      bitCount += unsignedSum(lo);
-      bitCount += unsignedSum(hi);
+      bitCount += unsignedSum(lo1);
+      bitCount += unsignedSum(hi1);
+      bitCount += unsignedSum(lo2);
+      bitCount += unsignedSum(hi2);
     }
     return bitCount;
   }
