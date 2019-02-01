@@ -5,7 +5,7 @@ import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.openkappa.panama.vectorbenchmarks.Util.YMM_INT;
+import static com.openkappa.panama.vectorbenchmarks.Util.I256;
 import static com.openkappa.panama.vectorbenchmarks.Util.newIntVector;
 
 @BenchmarkMode(Mode.Throughput)
@@ -29,8 +29,8 @@ public class MaxInts {
 
   @Benchmark
   public void zeroNegatives(Blackhole bh) {
-    for (int i = 0; i < size; i += YMM_INT.length()) {
-      YMM_INT.fromArray(input, i)
+    for (int i = 0; i < size; i += I256.length()) {
+      I256.fromArray(input, i)
               .max(0)
               .intoArray(output, i);
     }

@@ -5,7 +5,7 @@ import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.Arrays;
 
-import static com.openkappa.panama.vectorbenchmarks.Util.YMM_INT;
+import static com.openkappa.panama.vectorbenchmarks.Util.I256;
 import static com.openkappa.panama.vectorbenchmarks.Util.newIntRowMatrix;
 
 @BenchmarkMode(Mode.Throughput)
@@ -48,24 +48,24 @@ public class IntMatrixMatrixMultiplication {
       for (int rowOffset = 0; rowOffset < n; rowOffset += block_height) {
         for (int i = 0; i < n; ++i) {
           for (int j = columnOffset; j < columnOffset + blockWidth && j < n; j += 64) {
-            var sum1 = YMM_INT.fromArray(result, i * n + j);
-            var sum2 = YMM_INT.fromArray(result, i * n + j + 8);
-            var sum3 = YMM_INT.fromArray(result, i * n + j + 16);
-            var sum4 = YMM_INT.fromArray(result, i * n + j + 24);
-            var sum5 = YMM_INT.fromArray(result, i * n + j + 32);
-            var sum6 = YMM_INT.fromArray(result, i * n + j + 40);
-            var sum7 = YMM_INT.fromArray(result, i * n + j + 48);
-            var sum8 = YMM_INT.fromArray(result, i * n + j + 56);
+            var sum1 = I256.fromArray(result, i * n + j);
+            var sum2 = I256.fromArray(result, i * n + j + 8);
+            var sum3 = I256.fromArray(result, i * n + j + 16);
+            var sum4 = I256.fromArray(result, i * n + j + 24);
+            var sum5 = I256.fromArray(result, i * n + j + 32);
+            var sum6 = I256.fromArray(result, i * n + j + 40);
+            var sum7 = I256.fromArray(result, i * n + j + 48);
+            var sum8 = I256.fromArray(result, i * n + j + 56);
             for (int k = rowOffset; k < rowOffset + block_height && k < n; ++k) {
-              var multiplier = YMM_INT.broadcast(left[i * n + k]);
-              sum1 = sum1.add(multiplier.mul(YMM_INT.fromArray(right, k * n + j)));
-              sum2 = sum2.add(multiplier.mul(YMM_INT.fromArray(right, k * n + j + 8)));
-              sum3 = sum3.add(multiplier.mul(YMM_INT.fromArray(right, k * n + j + 16)));
-              sum4 = sum4.add(multiplier.mul(YMM_INT.fromArray(right, k * n + j + 24)));
-              sum5 = sum5.add(multiplier.mul(YMM_INT.fromArray(right, k * n + j + 32)));
-              sum6 = sum6.add(multiplier.mul(YMM_INT.fromArray(right, k * n + j + 40)));
-              sum7 = sum7.add(multiplier.mul(YMM_INT.fromArray(right, k * n + j + 48)));
-              sum8 = sum8.add(multiplier.mul(YMM_INT.fromArray(right, k * n + j + 56)));
+              var multiplier = I256.broadcast(left[i * n + k]);
+              sum1 = sum1.add(multiplier.mul(I256.fromArray(right, k * n + j)));
+              sum2 = sum2.add(multiplier.mul(I256.fromArray(right, k * n + j + 8)));
+              sum3 = sum3.add(multiplier.mul(I256.fromArray(right, k * n + j + 16)));
+              sum4 = sum4.add(multiplier.mul(I256.fromArray(right, k * n + j + 24)));
+              sum5 = sum5.add(multiplier.mul(I256.fromArray(right, k * n + j + 32)));
+              sum6 = sum6.add(multiplier.mul(I256.fromArray(right, k * n + j + 40)));
+              sum7 = sum7.add(multiplier.mul(I256.fromArray(right, k * n + j + 48)));
+              sum8 = sum8.add(multiplier.mul(I256.fromArray(right, k * n + j + 56)));
             }
             sum1.intoArray(result, i * n + j);
             sum2.intoArray(result, i * n + j + 8);

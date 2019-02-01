@@ -76,9 +76,9 @@ public class VerticalSum {
 
   @Benchmark
   public float[] verticalSumPanamaArray(VeriticalSumFloatArrayState state) {
-    for (int i = 0; i < state.size; i += YMM_FLOAT.length()) {
-      YMM_FLOAT.fromArray(state.left, i)
-               .add(YMM_FLOAT.fromArray(state.right, i))
+    for (int i = 0; i < state.size; i += F256.length()) {
+      F256.fromArray(state.left, i)
+               .add(F256.fromArray(state.right, i))
                .intoArray(state.result, i);
     }
     return state.result;
@@ -86,9 +86,9 @@ public class VerticalSum {
 
   @Benchmark
   public float[] verticalSumPanamaArrayNaNCheckPessimistic(VeriticalSumFloatArrayState state) {
-    for (int i = 0; i < state.size; i += YMM_FLOAT.length()) {
-      var l = YMM_FLOAT.fromArray(state.left, i);
-      var r = YMM_FLOAT.fromArray(state.right, i);
+    for (int i = 0; i < state.size; i += F256.length()) {
+      var l = F256.fromArray(state.left, i);
+      var r = F256.fromArray(state.right, i);
       var mask = l.notEqual(l).or(r.notEqual(r)).not();
       l.add(r).intoArray(state.result, i, mask);
     }
@@ -97,9 +97,9 @@ public class VerticalSum {
 
   @Benchmark
   public float[] verticalSumPanamaArrayNaNCheckOptimistic(VeriticalSumFloatArrayState state) {
-    for (int i = 0; i < state.size; i += YMM_FLOAT.length()) {
-      var l = YMM_FLOAT.fromArray(state.left, i);
-      var r = YMM_FLOAT.fromArray(state.right, i);
+    for (int i = 0; i < state.size; i += F256.length()) {
+      var l = F256.fromArray(state.left, i);
+      var r = F256.fromArray(state.right, i);
       l.blend(0f, l.notEqual(l)).add(r.blend(0f, r.notEqual(r))).intoArray(state.result, i);
     }
     return state.result;

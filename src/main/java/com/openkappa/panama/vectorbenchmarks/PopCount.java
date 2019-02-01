@@ -26,8 +26,11 @@ public class PopCount {
     benchmark.size = 1024;
     benchmark.init();
     Arrays.fill(benchmark.data, -1);
-    System.out.println(benchmark.scalar());
-    System.out.println(benchmark.vectorBitCount());
+    while (true) {
+      System.out.println(benchmark.scalar());
+      System.out.println(benchmark.vectorBitCount());
+      benchmark.init();
+    }
 //    System.out.println(benchmark.harleySeal());
   }
 
@@ -38,7 +41,7 @@ public class PopCount {
 
   private static byte[] NIBBLE_COUNTS = new byte[] {
           0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4,
-          0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   };
 
   long[] data;
@@ -48,18 +51,18 @@ public class PopCount {
     int bitCount = 0;
     int block = 256;
     for (int i = 0; i < data.length; i += block) {
-      var lo1 = YMM_INT.zero();
-      var hi1 = YMM_INT.zero();
-      var lo2 = YMM_INT.zero();
-      var hi2 = YMM_INT.zero();
-      var counts = YMM_BYTE.fromArray(NIBBLE_COUNTS, 0);
+      var lo1 = I256.zero();
+      var hi1 = I256.zero();
+      var lo2 = I256.zero();
+      var hi2 = I256.zero();
+      var counts = B256.fromArray(NIBBLE_COUNTS, 0);
       for (int j = 0; j < block; j += 8) {
-        var v1 = (IntVector)YMM_LONG.fromArray(data, i + j).rebracket(YMM_INT);
-        var v2 = (IntVector)YMM_LONG.fromArray(data, i + j + 4).rebracket(YMM_INT);
-        lo1 = lo1.add(counts.rearrange(v1.and(0x0F0F0F0F).rebracket(YMM_BYTE).toShuffle()).rebracket(YMM_INT));
-        hi1 = hi1.add(counts.rearrange(v1.shiftR(4).and(0x0F0F0F0F).rebracket(YMM_BYTE).toShuffle()).rebracket(YMM_INT));
-        lo2 = lo2.add(counts.rearrange(v2.and(0x0F0F0F0F).rebracket(YMM_BYTE).toShuffle()).rebracket(YMM_INT));
-        hi2 = hi2.add(counts.rearrange(v2.shiftR(4).and(0x0F0F0F0F).rebracket(YMM_BYTE).toShuffle()).rebracket(YMM_INT));
+        var v1 = (IntVector) L256.fromArray(data, i + j).rebracket(I256);
+        var v2 = (IntVector) L256.fromArray(data, i + j + 4).rebracket(I256);
+        lo1 = lo1.add(counts.rearrange(v1.and(0x0F0F0F0F).rebracket(B256).toShuffle()).rebracket(I256));
+        hi1 = hi1.add(counts.rearrange(v1.shiftR(4).and(0x0F0F0F0F).rebracket(B256).toShuffle()).rebracket(I256));
+        lo2 = lo2.add(counts.rearrange(v2.and(0x0F0F0F0F).rebracket(B256).toShuffle()).rebracket(I256));
+        hi2 = hi2.add(counts.rearrange(v2.shiftR(4).and(0x0F0F0F0F).rebracket(B256).toShuffle()).rebracket(I256));
       }
       bitCount += unsignedSum(lo1);
       bitCount += unsignedSum(hi1);
@@ -71,7 +74,7 @@ public class PopCount {
 
   private int unsignedSum(IntVector bv) {
     // convert to LongVector because Vector.get is slow
-    var lv = (LongVector) bv.rebracket(YMM_LONG);
+    var lv = (LongVector) bv.rebracket(L256);
     return sumBytes(lv.get(0))
          + sumBytes(lv.get(1))
          + sumBytes(lv.get(2))
@@ -106,11 +109,11 @@ public class PopCount {
 
 
   public int harleySeal(long[] data) {
-    var total = YMM_LONG.zero();
-    var ones = YMM_LONG.zero();
-    var twos = YMM_LONG.zero();
-    var fours = YMM_LONG.zero();
-    var eights = YMM_LONG.zero();
+    var total = L256.zero();
+    var ones = L256.zero();
+    var twos = L256.zero();
+    var fours = L256.zero();
+    var eights = L256.zero();
     LongVector sixteens;
     LongVector twosA;
     LongVector twosB;
@@ -119,15 +122,15 @@ public class PopCount {
     LongVector eightsA;
     LongVector eightsB;
     for (int i = 0; i < data.length >>> 2; i += 16 * 4) {
-      var a1 = YMM_LONG.fromArray(data, i);
+      var a1 = L256.fromArray(data, i);
       var b1 = ones;
-      var c1 = YMM_LONG.fromArray(data, i + 1 * 4);
+      var c1 = L256.fromArray(data, i + 1 * 4);
       var u1 = a1.xor(b1);
       twosA = a1.and(b1).or(u1.and(c1));
       ones = u1.xor(c1);
       var a2 = ones;
-      var b2 = YMM_LONG.fromArray(data, i + 2 * 4);
-      var c2 = YMM_LONG.fromArray(data, i + 3 * 4);
+      var b2 = L256.fromArray(data, i + 2 * 4);
+      var c2 = L256.fromArray(data, i + 3 * 4);
       var u2 = a2.xor(b2);
       twosB = a2.and(b2).or(u2.and(c2));
       ones = u2.xor(c2);
@@ -138,14 +141,14 @@ public class PopCount {
       foursA = a3.and(b3).or(u3.and(c3));
       twos = u3.xor(c3);
       var a4 = ones;
-      var b4 = YMM_LONG.fromArray(data, i + 4 * 4);
-      var c4 = YMM_LONG.fromArray(data, i + 5 * 4);
+      var b4 = L256.fromArray(data, i + 4 * 4);
+      var c4 = L256.fromArray(data, i + 5 * 4);
       var u4 = a4.xor(b4);
       twosA = a4.and(b4).or(u4.and(c4));
       ones = u4.xor(c4);
       var a5 = ones;
-      var b5 = YMM_LONG.fromArray(data, i + 6 * 4);
-      var c5 = YMM_LONG.fromArray(data, i + 7 * 4);
+      var b5 = L256.fromArray(data, i + 6 * 4);
+      var c5 = L256.fromArray(data, i + 7 * 4);
       var u5 = a5.xor(b5);
       twosB = a5.and(b5).or(u5.and(c5));
       ones = u5.xor(c5);
@@ -162,14 +165,14 @@ public class PopCount {
       eightsA = a7.and(b7).or(u7.and(c7));
       fours = u7.xor(c7);
       var a8 = ones;
-      var b8 = YMM_LONG.fromArray(data, i + 8 * 4);
-      var c8 = YMM_LONG.fromArray(data, i + 9 * 4);
+      var b8 = L256.fromArray(data, i + 8 * 4);
+      var c8 = L256.fromArray(data, i + 9 * 4);
       var u8 = a8.xor(b8);
       twosA = a8.and(b8).or(u8.and(c8));
       ones = u8.xor(c8);
       var a9 = ones;
-      var b9 = YMM_LONG.fromArray(data, i + 10 * 4);
-      var c9 = YMM_LONG.fromArray(data, i + 11 * 4);
+      var b9 = L256.fromArray(data, i + 10 * 4);
+      var c9 = L256.fromArray(data, i + 11 * 4);
       var u9 = a9.xor(b9);
       twosB = a9.and(b9).or(u9.and(c9));
       ones = u9.xor(c9);
@@ -180,14 +183,14 @@ public class PopCount {
       foursA = a10.and(b10).or(u10.and(c10));
       twos = u10.xor(c10);
       var a11 = ones;
-      var b11 = YMM_LONG.fromArray(data, i + 12 * 4);
-      var c11 = YMM_LONG.fromArray(data, i + 13 * 4);
+      var b11 = L256.fromArray(data, i + 12 * 4);
+      var c11 = L256.fromArray(data, i + 13 * 4);
       var u11 = a11.xor(b11);
       twosA = a11.and(b11).or(u11.and(c11));
       ones = u11.xor(c11);
       var a12 = ones;
-      var b12 = YMM_LONG.fromArray(data, i + 14 * 4);
-      var c12 = YMM_LONG.fromArray(data, i + 15 * 4);
+      var b12 = L256.fromArray(data, i + 14 * 4);
+      var c12 = L256.fromArray(data, i + 15 * 4);
       var u12 = a12.xor(b12);
       twosB = a12.and(b12).or(u12.and(c12));
       ones = u12.xor(c12);
@@ -220,13 +223,13 @@ public class PopCount {
   }
 
   private LongVector popcount256(LongVector vector) {
-    var bytes = (ByteVector)vector.rebracket(YMM_BYTE);
-    var lookupPos = YMM_BYTE.fromArray(LOOKUP_POS, 0);
-    var lookupNeg = YMM_BYTE.fromArray(LOOKUP_NEG, 0);
-    var lowMask = YMM_BYTE.broadcast((byte)0x0F);
+    var bytes = (ByteVector)vector.rebracket(B256);
+    var lookupPos = B256.fromArray(LOOKUP_POS, 0);
+    var lookupNeg = B256.fromArray(LOOKUP_NEG, 0);
+    var lowMask = B256.broadcast((byte)0x0F);
     return (LongVector)lookupPos.rearrange(bytes.and(lowMask).toShuffle())
             .add(lookupNeg.rearrange(bytes.shiftR(4).and(lowMask).toShuffle()))
-            .rebracket(YMM_LONG);
+            .rebracket(L256);
   }
 
   private static byte[] LOOKUP_POS = new byte[] {

@@ -186,15 +186,15 @@ public class IntIntersection {
       return 0;
     }
     while ((si + 4 <= smallSet.length) && (li < largeSet.length)) {
-      var target = XMM_INT.fromArray(smallSet, si);
+      var target = I128.fromArray(smallSet, si);
       int n = largeSet.length - li;
       if (n == 0)
         return pos;
-      var base = XMM_INT.broadcast(li);
+      var base = I128.broadcast(li);
       while (n > 1) {
         int half = n >>> 1;
         base = base.add(half);
-        var gathered = XMM_INT.scalars(
+        var gathered = I128.scalars(
                 largeSet[base.get(3)],
                 largeSet[base.get(2)],
                 largeSet[base.get(1)],
@@ -203,7 +203,7 @@ public class IntIntersection {
         base = base.sub(half, mask);
         n -= half;
       }
-      var gathered = XMM_INT.scalars(
+      var gathered = I128.scalars(
               largeSet[base.get(3)],
               largeSet[base.get(2)],
               largeSet[base.get(1)],
@@ -240,15 +240,15 @@ public class IntIntersection {
       return 0;
     }
     while ((si + 8 <= smallSet.length) && (li < largeSet.length)) {
-      var target = YMM_INT.fromArray(smallSet, si);
+      var target = I256.fromArray(smallSet, si);
       int n = largeSet.length - li;
       if (n == 0)
         return pos;
-      var base = YMM_INT.broadcast(li);
+      var base = I256.broadcast(li);
       while (n > 1) {
         int half = n >>> 1;
         base = base.add(half);
-        var gathered = YMM_INT.scalars(
+        var gathered = I256.scalars(
                 largeSet[base.get(7)],
                 largeSet[base.get(6)],
                 largeSet[base.get(5)],
@@ -260,7 +260,7 @@ public class IntIntersection {
         base = base.sub(half, gathered.greaterThanEq(target));
         n -= half;
       }
-      var gathered = YMM_INT.scalars(
+      var gathered = I256.scalars(
               largeSet[base.get(7)],
               largeSet[base.get(6)],
               largeSet[base.get(5)],

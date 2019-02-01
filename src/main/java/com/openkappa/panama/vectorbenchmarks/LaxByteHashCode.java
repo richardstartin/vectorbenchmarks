@@ -8,8 +8,8 @@ import java.util.Arrays;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.openkappa.panama.vectorbenchmarks.Util.YMM_BYTE;
-import static com.openkappa.panama.vectorbenchmarks.Util.YMM_INT;
+import static com.openkappa.panama.vectorbenchmarks.Util.B256;
+import static com.openkappa.panama.vectorbenchmarks.Util.I256;
 import static com.openkappa.panama.vectorbenchmarks.Util.newByteArray;
 
 @BenchmarkMode(Mode.Throughput)
@@ -61,11 +61,11 @@ public class LaxByteHashCode {
 
   @Benchmark
   public int hashCodeVectorAPIDependencies() {
-    var next = YMM_INT.broadcast(POWERS_OF_31[8]);
-    var coefficients = YMM_INT.fromArray(POWERS_OF_31, 0);
-    var acc = YMM_INT.zero();
-    for (int i = 0; i < data.length; i += YMM_BYTE.length()) {
-      acc = acc.add(coefficients.mul(YMM_BYTE.fromArray(data, i).rebracket(YMM_INT)));
+    var next = I256.broadcast(POWERS_OF_31[8]);
+    var coefficients = I256.fromArray(POWERS_OF_31, 0);
+    var acc = I256.zero();
+    for (int i = 0; i < data.length; i += B256.length()) {
+      acc = acc.add(coefficients.mul(B256.fromArray(data, i).rebracket(I256)));
       coefficients = coefficients.mul(next);
     }
     return acc.addAll();
@@ -73,22 +73,22 @@ public class LaxByteHashCode {
 
   @Benchmark
   public int hashCodeVectorAPINoDependencies() {
-    var next = YMM_INT.broadcast(POWERS_OF_31[8]);
-    var coefficients1 = YMM_INT.fromArray(POWERS_OF_31, 0);
+    var next = I256.broadcast(POWERS_OF_31[8]);
+    var coefficients1 = I256.fromArray(POWERS_OF_31, 0);
     var coefficients2 = coefficients1.mul(next);
     var coefficients3 = coefficients2.mul(next);
     var coefficients4 = coefficients3.mul(next);
     next = next.mul(next);
     next = next.mul(next);
-    var acc1 = YMM_INT.zero();
-    var acc2 = YMM_INT.zero();
-    var acc3 = YMM_INT.zero();
-    var acc4 = YMM_INT.zero();
-    for (int i = 0; i < data.length; i += YMM_BYTE.length() * 4) {
-      acc1 = acc1.add(coefficients1.mul(YMM_BYTE.fromArray(data, i).rebracket(YMM_INT)));
-      acc2 = acc2.add(coefficients2.mul(YMM_BYTE.fromArray(data, i + YMM_BYTE.length()).rebracket(YMM_INT)));
-      acc3 = acc3.add(coefficients3.mul(YMM_BYTE.fromArray(data, i + 2 * YMM_BYTE.length()).rebracket(YMM_INT)));
-      acc4 = acc4.add(coefficients4.mul(YMM_BYTE.fromArray(data, i + 3 * YMM_BYTE.length()).rebracket(YMM_INT)));
+    var acc1 = I256.zero();
+    var acc2 = I256.zero();
+    var acc3 = I256.zero();
+    var acc4 = I256.zero();
+    for (int i = 0; i < data.length; i += B256.length() * 4) {
+      acc1 = acc1.add(coefficients1.mul(B256.fromArray(data, i).rebracket(I256)));
+      acc2 = acc2.add(coefficients2.mul(B256.fromArray(data, i + B256.length()).rebracket(I256)));
+      acc3 = acc3.add(coefficients3.mul(B256.fromArray(data, i + 2 * B256.length()).rebracket(I256)));
+      acc4 = acc4.add(coefficients4.mul(B256.fromArray(data, i + 3 * B256.length()).rebracket(I256)));
       coefficients1 = coefficients1.mul(next);
       coefficients2 = coefficients2.mul(next);
       coefficients3 = coefficients3.mul(next);

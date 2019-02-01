@@ -4,11 +4,10 @@ package com.openkappa.panama.vectorbenchmarks;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
-import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-import static com.openkappa.panama.vectorbenchmarks.Util.YMM_INT;
+import static com.openkappa.panama.vectorbenchmarks.Util.I256;
 import static com.openkappa.panama.vectorbenchmarks.Util.newIntBitmap;
 
 @BenchmarkMode(Mode.Throughput)
@@ -45,11 +44,11 @@ public class Hashing {
 
   @Benchmark
   public void getHashPositionVector(Blackhole bh) {
-    var c1 = YMM_INT.broadcast(0xed558ccd);
-    var c2 = YMM_INT.broadcast(0x1a85ec53);
-    var vectorMask = YMM_INT.broadcast(mask);
-    for (int i = 0; i < values.length; i += YMM_INT.length()) {
-      var vector = YMM_INT.fromArray(values, i);
+    var c1 = I256.broadcast(0xed558ccd);
+    var c2 = I256.broadcast(0x1a85ec53);
+    var vectorMask = I256.broadcast(mask);
+    for (int i = 0; i < values.length; i += I256.length()) {
+      var vector = I256.fromArray(values, i);
       vector = vector.xor(vector.shiftR(15)).mul(c1);
       vector = vector.xor(vector.shiftR(15)).mul(c2);
       vector.xor(vector.shiftR(15)).and(vectorMask).intoArray(hashes, i);

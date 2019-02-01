@@ -144,31 +144,31 @@ public class Util {
     return bitmap;
   }
 
-  public static final IntVector.IntSpecies XMM_INT =
+  public static final IntVector.IntSpecies I128 =
           (IntVector.IntSpecies) Vector.species(int.class, S_128_BIT);
 
-  public static final IntVector.IntSpecies YMM_INT =
+  public static final IntVector.IntSpecies I256 =
           (IntVector.IntSpecies) Vector.species(int.class, S_256_BIT);
 
-  public static final FloatVector.FloatSpecies YMM_FLOAT =
+  public static final FloatVector.FloatSpecies F256 =
           (FloatVector.FloatSpecies) Vector.species(float.class, S_256_BIT);
 
-  public static final DoubleVector.DoubleSpecies YMM_DOUBLE =
+  public static final DoubleVector.DoubleSpecies D256 =
           (DoubleVector.DoubleSpecies) Vector.species(double.class, S_256_BIT);
 
-  public static final LongVector.LongSpecies YMM_LONG =
+  public static final LongVector.LongSpecies L256 =
           (LongVector.LongSpecies) Vector.species(long.class, S_256_BIT);
 
-  public static final ByteVector.ByteSpecies YMM_BYTE =
+  public static final ByteVector.ByteSpecies B256 =
           (ByteVector.ByteSpecies) Vector.species(byte.class, S_256_BIT);
 
-  public static final ByteVector.ByteSpecies XMM_BYTE =
+  public static final ByteVector.ByteSpecies B128 =
           (ByteVector.ByteSpecies) Vector.species(byte.class, S_128_BIT);
 
-  public static final ShortVector.ShortSpecies XMM_SHORT =
+  public static final ShortVector.ShortSpecies S128 =
           (ShortVector.ShortSpecies) Vector.species(short.class, S_128_BIT);
 
-  public static final LongVector.LongSpecies XMM_LONG =
+  public static final LongVector.LongSpecies L128 =
           (LongVector.LongSpecies) Vector.species(long.class, S_128_BIT);
 
   public static ByteBuffer allocateDirectAligned(final int capacity, final int alignment) {

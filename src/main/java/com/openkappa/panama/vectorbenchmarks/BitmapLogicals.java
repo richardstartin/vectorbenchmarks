@@ -5,7 +5,7 @@ import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.openkappa.panama.vectorbenchmarks.Util.YMM_INT;
+import static com.openkappa.panama.vectorbenchmarks.Util.I256;
 import static com.openkappa.panama.vectorbenchmarks.Util.newIntBitmap;
 
 @BenchmarkMode(Mode.Throughput)
@@ -64,32 +64,32 @@ public class BitmapLogicals {
 
   @Benchmark
   public void intersectPanamaInt(Blackhole bh) {
-    for (int i = 0; i < size; i += YMM_INT.length()) {
-      YMM_INT.fromArray(left, i).and(YMM_INT.fromArray(right, i)).intoArray(result, i);
+    for (int i = 0; i < size; i += I256.length()) {
+      I256.fromArray(left, i).and(I256.fromArray(right, i)).intoArray(result, i);
     }
     bh.consume(result);
   }
 
   @Benchmark
   public void unionPanamaInt(Blackhole bh) {
-    for (int i = 0; i < size; i += YMM_INT.length()) {
-      YMM_INT.fromArray(left, i).or(YMM_INT.fromArray(right, i)).intoArray(result, i);
+    for (int i = 0; i < size; i += I256.length()) {
+      I256.fromArray(left, i).or(I256.fromArray(right, i)).intoArray(result, i);
     }
     bh.consume(result);
   }
 
   @Benchmark
   public void differencePanamaInt(Blackhole bh) {
-    for (int i = 0; i < size; i += YMM_INT.length()) {
-      YMM_INT.fromArray(left, i).xor(YMM_INT.fromArray(right, i)).intoArray(result, i);
+    for (int i = 0; i < size; i += I256.length()) {
+      I256.fromArray(left, i).xor(I256.fromArray(right, i)).intoArray(result, i);
     }
     bh.consume(result);
   }
 
   @Benchmark
   public void leftDifferencePanamaInt(Blackhole bh) {
-    for (int i = 0; i < size; i += YMM_INT.length()) {
-      YMM_INT.fromArray(left, i).and(YMM_INT.fromArray(right, i).not()).intoArray(result, i);
+    for (int i = 0; i < size; i += I256.length()) {
+      I256.fromArray(left, i).and(I256.fromArray(right, i).not()).intoArray(result, i);
     }
     bh.consume(result);
   }

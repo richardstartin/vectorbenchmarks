@@ -4,9 +4,9 @@ package com.openkappa.panama.vectorbenchmarks;
 import jdk.incubator.vector.ByteVector;
 import org.openjdk.jmh.annotations.*;
 
-import static com.openkappa.panama.vectorbenchmarks.Util.XMM_BYTE;
-import static com.openkappa.panama.vectorbenchmarks.Util.XMM_INT;
-import static com.openkappa.panama.vectorbenchmarks.Util.XMM_SHORT;
+import static com.openkappa.panama.vectorbenchmarks.Util.B128;
+import static com.openkappa.panama.vectorbenchmarks.Util.I128;
+import static com.openkappa.panama.vectorbenchmarks.Util.S128;
 
 @BenchmarkMode(Mode.Throughput)
 @State(Scope.Benchmark)
@@ -63,33 +63,33 @@ public class StreamVByte {
   static int streamVByteEncode4(ByteVector in,
                                  byte[] data, int di,
                                  byte[] keys, int ki) {
-    var ones = XMM_INT.broadcast(0x01010101).rebracket(XMM_BYTE);
-    var gatherBits = XMM_INT.broadcast(0x08040102).rebracket(XMM_SHORT);
-    var codeTable = XMM_INT.scalars(0x03030303, 0x03030303, 0x03030303, 0x02020100).rebracket(XMM_BYTE);
-    var gatherBytes = XMM_INT.scalars(0, 0, 0x0D090501, 0x0D090501).rebracket(XMM_BYTE);
-    var aggregators = XMM_INT.scalars(0, 0, 0x01010101, 0x10400104).rebracket(XMM_SHORT);
+    var ones = I128.broadcast(0x01010101).rebracket(B128);
+    var gatherBits = I128.broadcast(0x08040102).rebracket(S128);
+    var codeTable = I128.scalars(0x03030303, 0x03030303, 0x03030303, 0x02020100).rebracket(B128);
+    var gatherBytes = I128.scalars(0, 0, 0x0D090501, 0x0D090501).rebracket(B128);
+    var aggregators = I128.scalars(0, 0, 0x01010101, 0x10400104).rebracket(S128);
 
     // in general wrong because there are no unsigned types, but correct some of the time
     var m1 = (ByteVector) in.min(ones)
-               .rebracket(XMM_SHORT)
+               .rebracket(S128)
                .add(gatherBits)
-               .rebracket(XMM_BYTE)
+               .rebracket(B128)
                .rearrange(codeTable.toShuffle())
                .rearrange(gatherBytes.toShuffle())
-               .rebracket(XMM_SHORT)
+               .rebracket(S128)
                .add(aggregators)
-               .rebracket(XMM_BYTE);
+               .rebracket(B128);
 
     int code = m1.get(1) & 0xFF;
     int length = LENGTH_TABLE[code];
-    var shuffle = XMM_BYTE.fromArray(ENCODING_SHUFFLE_TABLE, code * 16).toShuffle();
+    var shuffle = B128.fromArray(ENCODING_SHUFFLE_TABLE, code * 16).toShuffle();
     in.rearrange(shuffle).intoArray(data, di);
     keys[ki] = (byte)code;
     return length;
   }
 
   static int streamVByteEncodeQuad(int[] in, int ii, byte[] out, int oi, byte[] keys, int ki) {
-    return streamVByteEncode4((ByteVector) XMM_INT.fromArray(in, ii).rebracket(XMM_BYTE), out, oi, keys, ki);
+    return streamVByteEncode4((ByteVector) I128.fromArray(in, ii).rebracket(B128), out, oi, keys, ki);
   }
 
 

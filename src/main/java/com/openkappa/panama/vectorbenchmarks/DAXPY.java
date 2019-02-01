@@ -6,7 +6,7 @@ import org.openjdk.jmh.infra.Blackhole;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-import static com.openkappa.panama.vectorbenchmarks.Util.YMM_DOUBLE;
+import static com.openkappa.panama.vectorbenchmarks.Util.D256;
 import static com.openkappa.panama.vectorbenchmarks.Util.newDoubleVector;
 
 @BenchmarkMode(Mode.Throughput)
@@ -36,9 +36,9 @@ public class DAXPY {
 
   @Benchmark
   public void daxpyPanama(Blackhole bh) {
-    for (int i = 0; i < data.length; i += YMM_DOUBLE.length()) {
-      YMM_DOUBLE.fromArray(out, i)
-                .add(YMM_DOUBLE.fromArray(data, i).mul(s))
+    for (int i = 0; i < data.length; i += D256.length()) {
+      D256.fromArray(out, i)
+                .add(D256.fromArray(data, i).mul(s))
                 .intoArray(out, i);
     }
     bh.consume(out);
@@ -46,9 +46,9 @@ public class DAXPY {
 
   @Benchmark
   public void daxpyPanamaFMA(Blackhole bh) {
-    for (int i = 0; i < data.length; i += YMM_DOUBLE.length()) {
-      YMM_DOUBLE.fromArray(data, i)
-              .fma(YMM_DOUBLE.broadcast(s), YMM_DOUBLE.fromArray(out, i))
+    for (int i = 0; i < data.length; i += D256.length()) {
+      D256.fromArray(data, i)
+              .fma(D256.broadcast(s), D256.fromArray(out, i))
               .intoArray(out, i);
     }
     bh.consume(out);

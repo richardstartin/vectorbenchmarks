@@ -4,7 +4,7 @@ import org.openjdk.jmh.annotations.*;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.openkappa.panama.vectorbenchmarks.Util.YMM_FLOAT;
+import static com.openkappa.panama.vectorbenchmarks.Util.F256;
 import static com.openkappa.panama.vectorbenchmarks.Util.newFloatVector;
 
 @BenchmarkMode(Mode.Throughput)
@@ -26,9 +26,9 @@ public class HorizontalSum {
 
   @Benchmark
   public float horizontalSumPanama() {
-    var sum = YMM_FLOAT.zero();
-    for (int i = 0; i < size; i += YMM_FLOAT.length()) {
-      var l = YMM_FLOAT.fromArray(data, i);
+    var sum = F256.zero();
+    for (int i = 0; i < size; i += F256.length()) {
+      var l = F256.fromArray(data, i);
       sum = sum.add(l);
     }
     return sum.addAll();

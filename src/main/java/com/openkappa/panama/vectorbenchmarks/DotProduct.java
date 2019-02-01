@@ -4,7 +4,7 @@ import org.openjdk.jmh.annotations.*;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.openkappa.panama.vectorbenchmarks.Util.YMM_FLOAT;
+import static com.openkappa.panama.vectorbenchmarks.Util.F256;
 import static com.openkappa.panama.vectorbenchmarks.Util.newFloatVector;
 
 @BenchmarkMode(Mode.Throughput)
@@ -48,10 +48,10 @@ public class DotProduct {
 
   @Benchmark
   public float vector() {
-    var sum = YMM_FLOAT.zero();
-    for (int i = 0; i < size; i += YMM_FLOAT.length()) {
-      var l = YMM_FLOAT.fromArray(left, i);
-      var r = YMM_FLOAT.fromArray(right, i);
+    var sum = F256.zero();
+    for (int i = 0; i < size; i += F256.length()) {
+      var l = F256.fromArray(left, i);
+      var r = F256.fromArray(right, i);
       sum = l.fma(r, sum);
     }
     return sum.addAll();
@@ -82,16 +82,16 @@ public class DotProduct {
   }
 
   private float vectorUnrolled() {
-    var sum1 = YMM_FLOAT.zero();
-    var sum2 = YMM_FLOAT.zero();
-    var sum3 = YMM_FLOAT.zero();
-    var sum4 = YMM_FLOAT.zero();
-    int width = YMM_FLOAT.length();
+    var sum1 = F256.zero();
+    var sum2 = F256.zero();
+    var sum3 = F256.zero();
+    var sum4 = F256.zero();
+    int width = F256.length();
     for (int i = 0; i < size; i += width * 4) {
-      sum1 = YMM_FLOAT.fromArray(left, i).fma(YMM_FLOAT.fromArray(right, i), sum1);
-      sum2 = YMM_FLOAT.fromArray(left, i + width).fma(YMM_FLOAT.fromArray(right, i + width), sum2);
-      sum3 = YMM_FLOAT.fromArray(left, i + width * 2).fma(YMM_FLOAT.fromArray(right, i + width * 2), sum3);
-      sum4 = YMM_FLOAT.fromArray(left, i + width * 3).fma(YMM_FLOAT.fromArray(right, i + width * 3), sum4);
+      sum1 = F256.fromArray(left, i).fma(F256.fromArray(right, i), sum1);
+      sum2 = F256.fromArray(left, i + width).fma(F256.fromArray(right, i + width), sum2);
+      sum3 = F256.fromArray(left, i + width * 2).fma(F256.fromArray(right, i + width * 2), sum3);
+      sum4 = F256.fromArray(left, i + width * 3).fma(F256.fromArray(right, i + width * 3), sum4);
     }
     return sum1.addAll() + sum2.addAll() + sum3.addAll() + sum4.addAll();
   }

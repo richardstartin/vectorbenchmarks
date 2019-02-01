@@ -6,7 +6,7 @@ import org.openjdk.jmh.infra.Blackhole;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
-import static com.openkappa.panama.vectorbenchmarks.Util.YMM_LONG;
+import static com.openkappa.panama.vectorbenchmarks.Util.L256;
 import static com.openkappa.panama.vectorbenchmarks.Util.newDirectBitmap;
 
 @BenchmarkMode(Mode.Throughput)
@@ -43,7 +43,7 @@ public class DirectBitmap {
   @Benchmark
   public void intersectVector(Blackhole bh) {
     for (int i = 0; i < size; i += 8 * 4) {
-      YMM_LONG.fromByteBuffer(left, i).and(YMM_LONG.fromByteBuffer(right, i)).intoByteBuffer(result, i);
+      L256.fromByteBuffer(left, i).and(L256.fromByteBuffer(right, i)).intoByteBuffer(result, i);
     }
     bh.consume(result);
   }

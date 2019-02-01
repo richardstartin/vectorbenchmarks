@@ -5,7 +5,7 @@ import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.openkappa.panama.vectorbenchmarks.Util.YMM_DOUBLE;
+import static com.openkappa.panama.vectorbenchmarks.Util.D256;
 import static com.openkappa.panama.vectorbenchmarks.Util.newDoubleVector;
 
 @BenchmarkMode(Mode.Throughput)
@@ -29,8 +29,8 @@ public class MaxDoubles {
 
   @Benchmark
   public void zeroNegatives(Blackhole bh) {
-    for (int i = 0; i < size; i += YMM_DOUBLE.length()) {
-      YMM_DOUBLE.fromArray(input, i)
+    for (int i = 0; i < size; i += D256.length()) {
+      D256.fromArray(input, i)
              .max(0D)
              .intoArray(output, i);
     }
