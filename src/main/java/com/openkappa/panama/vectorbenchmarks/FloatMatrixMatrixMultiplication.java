@@ -1,5 +1,6 @@
 package com.openkappa.panama.vectorbenchmarks;
 
+import jdk.incubator.vector.FloatVector;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -49,24 +50,24 @@ public class FloatMatrixMatrixMultiplication {
       for (int rowOffset = 0; rowOffset < n; rowOffset += blockHeight) {
         for (int i = 0; i < n; ++i) {
           for (int j = columnOffset; j < columnOffset + blockWidth && j < n; j += 64) {
-            var sum1 = F256.fromArray(result, i * n + j);
-            var sum2 = F256.fromArray(result, i * n + j + 8);
-            var sum3 = F256.fromArray(result, i * n + j + 16);
-            var sum4 = F256.fromArray(result, i * n + j + 24);
-            var sum5 = F256.fromArray(result, i * n + j + 32);
-            var sum6 = F256.fromArray(result, i * n + j + 40);
-            var sum7 = F256.fromArray(result, i * n + j + 48);
-            var sum8 = F256.fromArray(result, i * n + j + 56);
+            var sum1 = FloatVector.fromArray(F256, result, i * n + j);
+            var sum2 = FloatVector.fromArray(F256, result, i * n + j + 8);
+            var sum3 = FloatVector.fromArray(F256, result, i * n + j + 16);
+            var sum4 = FloatVector.fromArray(F256, result, i * n + j + 24);
+            var sum5 = FloatVector.fromArray(F256, result, i * n + j + 32);
+            var sum6 = FloatVector.fromArray(F256, result, i * n + j + 40);
+            var sum7 = FloatVector.fromArray(F256, result, i * n + j + 48);
+            var sum8 = FloatVector.fromArray(F256, result, i * n + j + 56);
             for (int k = rowOffset; k < rowOffset + blockHeight && k < n; ++k) {
               var multiplier = F256.broadcast(left[i * n + k]);
-              sum1 = multiplier.fma(F256.fromArray(right, k * n + j), sum1);
-              sum2 = multiplier.fma(F256.fromArray(right, k * n + j + 8), sum2);
-              sum3 = multiplier.fma(F256.fromArray(right, k * n + j + 16), sum3);
-              sum4 = multiplier.fma(F256.fromArray(right, k * n + j + 24), sum4);
-              sum5 = multiplier.fma(F256.fromArray(right, k * n + j + 32), sum5);
-              sum6 = multiplier.fma(F256.fromArray(right, k * n + j + 40), sum6);
-              sum7 = multiplier.fma(F256.fromArray(right, k * n + j + 48), sum7);
-              sum8 = multiplier.fma(F256.fromArray(right, k * n + j + 56), sum8);
+              sum1 = multiplier.fma(FloatVector.fromArray(F256, right, k * n + j), sum1);
+              sum2 = multiplier.fma(FloatVector.fromArray(F256, right, k * n + j + 8), sum2);
+              sum3 = multiplier.fma(FloatVector.fromArray(F256, right, k * n + j + 16), sum3);
+              sum4 = multiplier.fma(FloatVector.fromArray(F256, right, k * n + j + 24), sum4);
+              sum5 = multiplier.fma(FloatVector.fromArray(F256, right, k * n + j + 32), sum5);
+              sum6 = multiplier.fma(FloatVector.fromArray(F256, right, k * n + j + 40), sum6);
+              sum7 = multiplier.fma(FloatVector.fromArray(F256, right, k * n + j + 48), sum7);
+              sum8 = multiplier.fma(FloatVector.fromArray(F256, right, k * n + j + 56), sum8);
             }
             sum1.intoArray(result, i * n + j);
             sum2.intoArray(result, i * n + j + 8);

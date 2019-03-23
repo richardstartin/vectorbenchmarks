@@ -1,6 +1,7 @@
 package com.openkappa.panama.vectorbenchmarks;
 
 
+import jdk.incubator.vector.IntVector;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -48,7 +49,7 @@ public class Hashing {
     var c2 = I256.broadcast(0x1a85ec53);
     var vectorMask = I256.broadcast(mask);
     for (int i = 0; i < values.length; i += I256.length()) {
-      var vector = I256.fromArray(values, i);
+      var vector = IntVector.fromArray(I256, values, i);
       vector = vector.xor(vector.shiftR(15)).mul(c1);
       vector = vector.xor(vector.shiftR(15)).mul(c2);
       vector.xor(vector.shiftR(15)).and(vectorMask).intoArray(hashes, i);

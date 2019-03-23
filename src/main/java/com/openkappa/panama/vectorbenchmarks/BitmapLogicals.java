@@ -1,5 +1,6 @@
 package com.openkappa.panama.vectorbenchmarks;
 
+import jdk.incubator.vector.IntVector;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -65,7 +66,7 @@ public class BitmapLogicals {
   @Benchmark
   public void intersectPanamaInt(Blackhole bh) {
     for (int i = 0; i < size; i += I256.length()) {
-      I256.fromArray(left, i).and(I256.fromArray(right, i)).intoArray(result, i);
+      IntVector.fromArray(I256, left, i).and(IntVector.fromArray(I256, right, i)).intoArray(result, i);
     }
     bh.consume(result);
   }
@@ -73,7 +74,7 @@ public class BitmapLogicals {
   @Benchmark
   public void unionPanamaInt(Blackhole bh) {
     for (int i = 0; i < size; i += I256.length()) {
-      I256.fromArray(left, i).or(I256.fromArray(right, i)).intoArray(result, i);
+      IntVector.fromArray(I256, left, i).or(IntVector.fromArray(I256, right, i)).intoArray(result, i);
     }
     bh.consume(result);
   }
@@ -81,7 +82,7 @@ public class BitmapLogicals {
   @Benchmark
   public void differencePanamaInt(Blackhole bh) {
     for (int i = 0; i < size; i += I256.length()) {
-      I256.fromArray(left, i).xor(I256.fromArray(right, i)).intoArray(result, i);
+      IntVector.fromArray(I256, left, i).xor(IntVector.fromArray(I256, right, i)).intoArray(result, i);
     }
     bh.consume(result);
   }
@@ -89,7 +90,7 @@ public class BitmapLogicals {
   @Benchmark
   public void leftDifferencePanamaInt(Blackhole bh) {
     for (int i = 0; i < size; i += I256.length()) {
-      I256.fromArray(left, i).and(I256.fromArray(right, i).not()).intoArray(result, i);
+      IntVector.fromArray(I256, left, i).and(IntVector.fromArray(I256, right, i).not()).intoArray(result, i);
     }
     bh.consume(result);
   }

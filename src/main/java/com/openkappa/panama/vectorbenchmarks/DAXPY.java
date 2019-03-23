@@ -1,5 +1,6 @@
 package com.openkappa.panama.vectorbenchmarks;
 
+import jdk.incubator.vector.DoubleVector;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -37,8 +38,8 @@ public class DAXPY {
   @Benchmark
   public void daxpyPanama(Blackhole bh) {
     for (int i = 0; i < data.length; i += D256.length()) {
-      D256.fromArray(out, i)
-                .add(D256.fromArray(data, i).mul(s))
+      DoubleVector.fromArray(D256, out, i)
+                .add(DoubleVector.fromArray(D256, data, i).mul(s))
                 .intoArray(out, i);
     }
     bh.consume(out);
@@ -47,8 +48,8 @@ public class DAXPY {
   @Benchmark
   public void daxpyPanamaFMA(Blackhole bh) {
     for (int i = 0; i < data.length; i += D256.length()) {
-      D256.fromArray(data, i)
-              .fma(D256.broadcast(s), D256.fromArray(out, i))
+      DoubleVector.fromArray(D256, data, i)
+              .fma(D256.broadcast(s), DoubleVector.fromArray(D256, out, i))
               .intoArray(out, i);
     }
     bh.consume(out);

@@ -1,5 +1,6 @@
 package com.openkappa.panama.vectorbenchmarks;
 
+import jdk.incubator.vector.IntVector;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -30,7 +31,7 @@ public class MaxInts {
   @Benchmark
   public void zeroNegatives(Blackhole bh) {
     for (int i = 0; i < size; i += I256.length()) {
-      I256.fromArray(input, i)
+      IntVector.fromArray(I256, input, i)
               .max(0)
               .intoArray(output, i);
     }

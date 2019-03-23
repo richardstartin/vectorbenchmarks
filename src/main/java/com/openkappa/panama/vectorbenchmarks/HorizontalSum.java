@@ -1,5 +1,6 @@
 package com.openkappa.panama.vectorbenchmarks;
 
+import jdk.incubator.vector.FloatVector;
 import org.openjdk.jmh.annotations.*;
 
 import java.util.concurrent.TimeUnit;
@@ -28,7 +29,7 @@ public class HorizontalSum {
   public float horizontalSumPanama() {
     var sum = F256.zero();
     for (int i = 0; i < size; i += F256.length()) {
-      var l = F256.fromArray(data, i);
+      var l = FloatVector.fromArray(F256, data, i);
       sum = sum.add(l);
     }
     return sum.addAll();

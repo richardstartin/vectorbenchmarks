@@ -145,31 +145,31 @@ public class Util {
   }
 
   public static final IntVector.IntSpecies I128 =
-          (IntVector.IntSpecies) Vector.species(int.class, S_128_BIT);
+          (IntVector.IntSpecies) Vector.Species.of(int.class, S_128_BIT);
 
   public static final IntVector.IntSpecies I256 =
-          (IntVector.IntSpecies) Vector.species(int.class, S_256_BIT);
+          (IntVector.IntSpecies) Vector.Species.of(int.class, S_256_BIT);
 
   public static final FloatVector.FloatSpecies F256 =
-          (FloatVector.FloatSpecies) Vector.species(float.class, S_256_BIT);
+          (FloatVector.FloatSpecies) Vector.Species.of(float.class, S_256_BIT);
 
   public static final DoubleVector.DoubleSpecies D256 =
-          (DoubleVector.DoubleSpecies) Vector.species(double.class, S_256_BIT);
+          (DoubleVector.DoubleSpecies) Vector.Species.of(double.class, S_256_BIT);
 
   public static final LongVector.LongSpecies L256 =
-          (LongVector.LongSpecies) Vector.species(long.class, S_256_BIT);
+          (LongVector.LongSpecies) Vector.Species.of(long.class, S_256_BIT);
 
   public static final ByteVector.ByteSpecies B256 =
-          (ByteVector.ByteSpecies) Vector.species(byte.class, S_256_BIT);
+          (ByteVector.ByteSpecies) Vector.Species.of(byte.class, S_256_BIT);
 
   public static final ByteVector.ByteSpecies B128 =
-          (ByteVector.ByteSpecies) Vector.species(byte.class, S_128_BIT);
+          (ByteVector.ByteSpecies) Vector.Species.of(byte.class, S_128_BIT);
 
   public static final ShortVector.ShortSpecies S128 =
-          (ShortVector.ShortSpecies) Vector.species(short.class, S_128_BIT);
+          (ShortVector.ShortSpecies) Vector.Species.of(short.class, S_128_BIT);
 
   public static final LongVector.LongSpecies L128 =
-          (LongVector.LongSpecies) Vector.species(long.class, S_128_BIT);
+          (LongVector.LongSpecies) Vector.Species.of(long.class, S_128_BIT);
 
   public static ByteBuffer allocateDirectAligned(final int capacity, final int alignment) {
     ByteBuffer buffer = ByteBuffer.allocateDirect(capacity + alignment).order(ByteOrder.nativeOrder( ));

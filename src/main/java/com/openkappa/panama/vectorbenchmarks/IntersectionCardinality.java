@@ -1,5 +1,6 @@
 package com.openkappa.panama.vectorbenchmarks;
 
+import jdk.incubator.vector.LongVector;
 import org.openjdk.jmh.annotations.*;
 
 import java.util.concurrent.TimeUnit;
@@ -65,7 +66,7 @@ public class IntersectionCardinality {
     long[] intersections = buffer;
     int cardinality = 0;
     for (int i = 0; i < size && i < left.length && i < right.length; i += 4) {
-      L256.fromArray(left, i).and(L256.fromArray(right, i)).intoArray(intersections, 0);
+      LongVector.fromArray(L256, left, i).and(LongVector.fromArray(L256, right, i)).intoArray(intersections, 0);
       cardinality += Long.bitCount(intersections[0]);
       cardinality += Long.bitCount(intersections[1]);
       cardinality += Long.bitCount(intersections[2]);
@@ -81,8 +82,8 @@ public class IntersectionCardinality {
     int cardinality2 = 0;
     int cardinality3 = 0;
     for (int i = 0; i < size && i < left.length && i < right.length; i += 8) {
-      L256.fromArray(left, i).and(L256.fromArray(right, i)).intoArray(intersections, 0);
-      L256.fromArray(left, i + 4).and(L256.fromArray(right, i + 4)).intoArray(intersections, 4);
+      LongVector.fromArray(L256, left, i).and(LongVector.fromArray(L256, right, i)).intoArray(intersections, 0);
+      LongVector.fromArray(L256, left, i + 4).and(LongVector.fromArray(L256, right, i + 4)).intoArray(intersections, 4);
       cardinality1 += Long.bitCount(intersections[0]);
       cardinality2 += Long.bitCount(intersections[1]);
       cardinality3 += Long.bitCount(intersections[2]);
@@ -99,7 +100,7 @@ public class IntersectionCardinality {
   public int vpandExtractPopcnt() {
     int cardinality = 0;
     for (int i = 0; i < size && i < left.length && i < right.length; i += 4) {
-      var intersection = L256.fromArray(left, i).and(L256.fromArray(right, i));
+      var intersection = LongVector.fromArray(L256, left, i).and(LongVector.fromArray(L256, right, i));
       cardinality += Long.bitCount(intersection.get(0));
       cardinality += Long.bitCount(intersection.get(1));
       cardinality += Long.bitCount(intersection.get(2));
@@ -114,8 +115,8 @@ public class IntersectionCardinality {
     int cardinality2 = 0;
     int cardinality3 = 0;
     for (int i = 0; i < size && i < left.length && i < right.length; i += 8) {
-      var intersection1 = L256.fromArray(left, i).and(L256.fromArray(right, i));
-      var intersection2 = L256.fromArray(left, i + 4).and(L256.fromArray(right, i + 4));
+      var intersection1 = LongVector.fromArray(L256, left, i).and(LongVector.fromArray(L256, right, i));
+      var intersection2 = LongVector.fromArray(L256, left, i + 4).and(LongVector.fromArray(L256, right, i + 4));
       cardinality1 += Long.bitCount(intersection1.get(0));
       cardinality2 += Long.bitCount(intersection1.get(1));
       cardinality3 += Long.bitCount(intersection1.get(2));

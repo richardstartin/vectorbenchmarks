@@ -1,5 +1,6 @@
 package com.openkappa.panama.vectorbenchmarks;
 
+import jdk.incubator.vector.DoubleVector;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -30,7 +31,7 @@ public class MaxDoubles {
   @Benchmark
   public void zeroNegatives(Blackhole bh) {
     for (int i = 0; i < size; i += D256.length()) {
-      D256.fromArray(input, i)
+      DoubleVector.fromArray(D256, input, i)
              .max(0D)
              .intoArray(output, i);
     }

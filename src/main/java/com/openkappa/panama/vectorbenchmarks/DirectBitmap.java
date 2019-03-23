@@ -1,5 +1,6 @@
 package com.openkappa.panama.vectorbenchmarks;
 
+import jdk.incubator.vector.LongVector;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -43,7 +44,7 @@ public class DirectBitmap {
   @Benchmark
   public void intersectVector(Blackhole bh) {
     for (int i = 0; i < size; i += 8 * 4) {
-      L256.fromByteBuffer(left, i).and(L256.fromByteBuffer(right, i)).intoByteBuffer(result, i);
+      LongVector.fromByteBuffer(L256, left, i).and(LongVector.fromByteBuffer(L256, right, i)).intoByteBuffer(result, i);
     }
     bh.consume(result);
   }

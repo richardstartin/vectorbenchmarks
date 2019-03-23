@@ -1,5 +1,6 @@
 package com.openkappa.panama.vectorbenchmarks;
 
+import jdk.incubator.vector.FloatVector;
 import org.openjdk.jmh.annotations.*;
 
 import java.util.concurrent.TimeUnit;
@@ -50,8 +51,8 @@ public class DotProduct {
   public float vector() {
     var sum = F256.zero();
     for (int i = 0; i < size; i += F256.length()) {
-      var l = F256.fromArray(left, i);
-      var r = F256.fromArray(right, i);
+      var l = FloatVector.fromArray(F256, left, i);
+      var r = FloatVector.fromArray(F256, right, i);
       sum = l.fma(r, sum);
     }
     return sum.addAll();
@@ -88,10 +89,10 @@ public class DotProduct {
     var sum4 = F256.zero();
     int width = F256.length();
     for (int i = 0; i < size; i += width * 4) {
-      sum1 = F256.fromArray(left, i).fma(F256.fromArray(right, i), sum1);
-      sum2 = F256.fromArray(left, i + width).fma(F256.fromArray(right, i + width), sum2);
-      sum3 = F256.fromArray(left, i + width * 2).fma(F256.fromArray(right, i + width * 2), sum3);
-      sum4 = F256.fromArray(left, i + width * 3).fma(F256.fromArray(right, i + width * 3), sum4);
+      sum1 = FloatVector.fromArray(F256, left, i).fma(FloatVector.fromArray(F256, right, i), sum1);
+      sum2 = FloatVector.fromArray(F256, left, i + width).fma(FloatVector.fromArray(F256, right, i + width), sum2);
+      sum3 = FloatVector.fromArray(F256, left, i + width * 2).fma(FloatVector.fromArray(F256, right, i + width * 2), sum3);
+      sum4 = FloatVector.fromArray(F256, left, i + width * 3).fma(FloatVector.fromArray(F256, right, i + width * 3), sum4);
     }
     return sum1.addAll() + sum2.addAll() + sum3.addAll() + sum4.addAll();
   }

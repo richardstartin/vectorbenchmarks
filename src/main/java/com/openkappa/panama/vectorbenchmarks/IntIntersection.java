@@ -240,7 +240,7 @@ public class IntIntersection {
       return 0;
     }
     while ((si + 8 <= smallSet.length) && (li < largeSet.length)) {
-      var target = I256.fromArray(smallSet, si);
+      var target = IntVector.fromArray(I256, smallSet, si);
       int n = largeSet.length - li;
       if (n == 0)
         return pos;
