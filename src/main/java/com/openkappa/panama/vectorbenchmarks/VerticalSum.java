@@ -1,5 +1,6 @@
 package com.openkappa.panama.vectorbenchmarks;
 
+import jdk.incubator.vector.FloatVector;
 import org.openjdk.jmh.annotations.*;
 
 import java.nio.ByteBuffer;

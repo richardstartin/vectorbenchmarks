@@ -1,5 +1,6 @@
 package com.openkappa.panama.vectorbenchmarks;
 
+import jdk.incubator.vector.IntVector;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
