@@ -49,7 +49,7 @@ public class DAXPY {
   public void daxpyPanamaFMA(Blackhole bh) {
     for (int i = 0; i < data.length; i += D256.length()) {
       DoubleVector.fromArray(D256, data, i)
-              .fma(D256.broadcast(s), DoubleVector.fromArray(D256, out, i))
+              .fma(DoubleVector.broadcast(D256, s), DoubleVector.fromArray(D256, out, i))
               .intoArray(out, i);
     }
     bh.consume(out);

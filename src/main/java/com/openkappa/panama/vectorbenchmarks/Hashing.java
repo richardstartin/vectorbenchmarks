@@ -45,14 +45,14 @@ public class Hashing {
 
   @Benchmark
   public void getHashPositionVector(Blackhole bh) {
-    var c1 = I256.broadcast(0xed558ccd);
-    var c2 = I256.broadcast(0x1a85ec53);
-    var vectorMask = I256.broadcast(mask);
+    var c1 = IntVector.broadcast(I256, 0xed558ccd);
+    var c2 = IntVector.broadcast(I256, 0x1a85ec53);
+    var vectorMask = IntVector.broadcast(I256, mask);
     for (int i = 0; i < values.length; i += I256.length()) {
       var vector = IntVector.fromArray(I256, values, i);
-      vector = vector.xor(vector.shiftR(15)).mul(c1);
-      vector = vector.xor(vector.shiftR(15)).mul(c2);
-      vector.xor(vector.shiftR(15)).and(vectorMask).intoArray(hashes, i);
+      vector = vector.xor(vector.shiftRight(15)).mul(c1);
+      vector = vector.xor(vector.shiftRight(15)).mul(c2);
+      vector.xor(vector.shiftRight(15)).and(vectorMask).intoArray(hashes, i);
     }
     bh.consume(hashes);
   }

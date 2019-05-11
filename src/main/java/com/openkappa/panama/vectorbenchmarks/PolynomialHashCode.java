@@ -67,27 +67,27 @@ public class PolynomialHashCode {
 
   @Benchmark
   public int polynomialHashCode() {
-    var next = I256.broadcast(POWERS_OF_31_BACKWARDS[33 - 9]);
+    var next = IntVector.broadcast(I256, POWERS_OF_31_BACKWARDS[33 - 9]);
     var coefficients = IntVector.fromArray(I256, POWERS_OF_31_BACKWARDS, 33 - 8);
-    var acc = I256.zero();
+    var acc = IntVector.zero(I256);
     for (int i = data.length; i - I256.length() >= 0; i -= I256.length()) {
       acc = acc.add(coefficients.mul(IntVector.fromArray(I256, data, i - I256.length())));
       coefficients = coefficients.mul(next);
     }
-    return acc.addAll() + coefficients.get(7);
+    return acc.addLanes() + coefficients.lane(7);
   }
 
   @Benchmark
   public int polynomialHashCodeUnrolled() {
-    var next = I256.broadcast(POWERS_OF_31_BACKWARDS[0]);
+    var next = IntVector.broadcast(I256, POWERS_OF_31_BACKWARDS[0]);
     var coefficients1 = IntVector.fromArray(I256, POWERS_OF_31_BACKWARDS, 33 - 8);
     var coefficients2 = IntVector.fromArray(I256, POWERS_OF_31_BACKWARDS, 33 - 16);
     var coefficients3 = IntVector.fromArray(I256, POWERS_OF_31_BACKWARDS, 33 - 24);
     var coefficients4 = IntVector.fromArray(I256, POWERS_OF_31_BACKWARDS, 33 - 32);
-    var acc1 = I256.zero();
-    var acc2 = I256.zero();
-    var acc3 = I256.zero();
-    var acc4 = I256.zero();
+    var acc1 = IntVector.zero(I256);
+    var acc2 = IntVector.zero(I256);
+    var acc3 = IntVector.zero(I256);
+    var acc4 = IntVector.zero(I256);
     for (int i = data.length; i - 4 * I256.length() >= 0; i -= I256.length() * 4) {
       acc1 = acc1.add(coefficients1.mul(IntVector.fromArray(I256, data, i - I256.length())));
       acc2 = acc2.add(coefficients2.mul(IntVector.fromArray(I256, data, i - 2 * I256.length())));
@@ -98,7 +98,7 @@ public class PolynomialHashCode {
       coefficients3 = coefficients3.mul(next);
       coefficients4 = coefficients4.mul(next);
     }
-    return acc1.add(acc2).add(acc3).add(acc4).addAll() + coefficients1.get(7);
+    return acc1.add(acc2).add(acc3).add(acc4).addLanes() + coefficients1.lane(7);
   }
 
 }

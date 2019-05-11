@@ -59,7 +59,7 @@ public class FloatMatrixMatrixMultiplication {
             var sum7 = FloatVector.fromArray(F256, result, i * n + j + 48);
             var sum8 = FloatVector.fromArray(F256, result, i * n + j + 56);
             for (int k = rowOffset; k < rowOffset + blockHeight && k < n; ++k) {
-              var multiplier = F256.broadcast(left[i * n + k]);
+              var multiplier = FloatVector.broadcast(F256, left[i * n + k]);
               sum1 = multiplier.fma(FloatVector.fromArray(F256, right, k * n + j), sum1);
               sum2 = multiplier.fma(FloatVector.fromArray(F256, right, k * n + j + 8), sum2);
               sum3 = multiplier.fma(FloatVector.fromArray(F256, right, k * n + j + 16), sum3);

@@ -64,11 +64,11 @@ public class StreamVByte {
   static int streamVByteEncode4(ByteVector in,
                                  byte[] data, int di,
                                  byte[] keys, int ki) {
-    var ones = I128.broadcast(0x01010101).reinterpret(B128);
-    var gatherBits = I128.broadcast(0x08040102).reinterpret(S128);
-    var codeTable = I128.scalars(0x03030303, 0x03030303, 0x03030303, 0x02020100).reinterpret(B128);
-    var gatherBytes = I128.scalars(0, 0, 0x0D090501, 0x0D090501).reinterpret(B128);
-    var aggregators = I128.scalars(0, 0, 0x01010101, 0x10400104).reinterpret(S128);
+    var ones = IntVector.broadcast(I128, 0x01010101).reinterpret(B128);
+    var gatherBits = IntVector.broadcast(I128, 0x08040102).reinterpret(S128);
+    var codeTable = IntVector.scalars(I128, 0x03030303, 0x03030303, 0x03030303, 0x02020100).reinterpret(B128);
+    var gatherBytes = IntVector.scalars(I128, 0, 0, 0x0D090501, 0x0D090501).reinterpret(B128);
+    var aggregators = IntVector.scalars(I128, 0, 0, 0x01010101, 0x10400104).reinterpret(S128);
 
     // in general wrong because there are no unsigned types, but correct some of the time
     var m1 = (ByteVector) in.min(ones)
@@ -81,7 +81,7 @@ public class StreamVByte {
                .add(aggregators)
                .reinterpret(B128);
 
-    int code = m1.get(1) & 0xFF;
+    int code = m1.lane(1) & 0xFF;
     int length = LENGTH_TABLE[code];
     var shuffle = ByteVector.fromArray(B128, ENCODING_SHUFFLE_TABLE, code * 16).toShuffle();
     in.rearrange(shuffle).intoArray(data, di);

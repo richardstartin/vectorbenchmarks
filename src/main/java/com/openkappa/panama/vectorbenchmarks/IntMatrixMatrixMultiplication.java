@@ -58,7 +58,7 @@ public class IntMatrixMatrixMultiplication {
             var sum7 = IntVector.fromArray(I256, result, i * n + j + 48);
             var sum8 = IntVector.fromArray(I256, result, i * n + j + 56);
             for (int k = rowOffset; k < rowOffset + block_height && k < n; ++k) {
-              var multiplier = I256.broadcast(left[i * n + k]);
+              var multiplier = IntVector.broadcast(I256, left[i * n + k]);
               sum1 = sum1.add(multiplier.mul(IntVector.fromArray(I256, right, k * n + j)));
               sum2 = sum2.add(multiplier.mul(IntVector.fromArray(I256, right, k * n + j + 8)));
               sum3 = sum3.add(multiplier.mul(IntVector.fromArray(I256, right, k * n + j + 16)));

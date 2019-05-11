@@ -57,10 +57,10 @@ public class PostLoops {
     float[] left = state.left;
     float[] right = state.right;
     float[] buffer = state.buffer;
-    var sum1 = F256.zero();
-    var sum2 = F256.zero();
-    var sum3 = F256.zero();
-    var sum4 = F256.zero();
+    var sum1 = FloatVector.zero(F256);
+    var sum2 = FloatVector.zero(F256);
+    var sum3 = FloatVector.zero(F256);
+    var sum4 = FloatVector.zero(F256);
     int width = F256.length();
     int limit = state.size & -(4 * F256.length());
     for (int i = 0; i < limit; i += width * 4) {
@@ -83,18 +83,18 @@ public class PostLoops {
     l2 = l2.fma(r2, l2);
     l3 = l3.fma(r3, l3);
     l4 = l4.fma(r4, l4);
-    F256.zero().intoArray(buffer, 0);
-    F256.zero().intoArray(buffer, F256.length());
-    F256.zero().intoArray(buffer, F256.length() * 2);
-    F256.zero().intoArray(buffer, F256.length() * 3);
-    return sum1.add(l1).add(sum2.add(l2)).add(sum3.add(l3).add(sum4.add(l4))).addAll();
+    FloatVector.zero(F256).intoArray(buffer, 0);
+    FloatVector.zero(F256).intoArray(buffer, F256.length());
+    FloatVector.zero(F256).intoArray(buffer, F256.length() * 2);
+    FloatVector.zero(F256).intoArray(buffer, F256.length() * 3);
+    return sum1.add(l1).add(sum2.add(l2)).add(sum3.add(l3).add(sum4.add(l4))).addLanes();
   }
 
   private float mainLoop(int size, float[] left, float[] right) {
-    var sum1 = F256.zero();
-    var sum2 = F256.zero();
-    var sum3 = F256.zero();
-    var sum4 = F256.zero();
+    var sum1 = FloatVector.zero(F256);
+    var sum2 = FloatVector.zero(F256);
+    var sum3 = FloatVector.zero(F256);
+    var sum4 = FloatVector.zero(F256);
     int width = F256.length();
     for (int i = 0; i < size; i += width * 4) {
       sum1 = FloatVector.fromArray(F256, left, i).fma(FloatVector.fromArray(F256, right, i), sum1);
@@ -102,7 +102,7 @@ public class PostLoops {
       sum3 = FloatVector.fromArray(F256, left, i + width * 2).fma(FloatVector.fromArray(F256, right, i + width * 2), sum3);
       sum4 = FloatVector.fromArray(F256, left, i + width * 3).fma(FloatVector.fromArray(F256, right, i + width * 3), sum4);
     }
-    return sum1.add(sum2).add(sum3.add(sum4)).addAll();
+    return sum1.add(sum2).add(sum3.add(sum4)).addLanes();
   }
 
   private float scalarPostLoop(int start, float[] left, float[] right) {
@@ -128,10 +128,10 @@ public class PostLoops {
     l2 = l2.fma(r2, l2);
     l3 = l3.fma(r3, l3);
     l4 = l4.fma(r4, l4);
-    F256.zero().intoArray(buffer, 0);
-    F256.zero().intoArray(buffer, F256.length());
-    F256.zero().intoArray(buffer, F256.length() * 2);
-    F256.zero().intoArray(buffer, F256.length() * 3);
-    return l1.add(l2).add(l3.add(l4)).addAll();
+    FloatVector.zero(F256).intoArray(buffer, 0);
+    FloatVector.zero(F256).intoArray(buffer, F256.length());
+    FloatVector.zero(F256).intoArray(buffer, F256.length() * 2);
+    FloatVector.zero(F256).intoArray(buffer, F256.length() * 3);
+    return l1.add(l2).add(l3.add(l4)).addLanes();
   }
 }

@@ -1,13 +1,12 @@
 package com.openkappa.panama.vectorbenchmarks;
 
-import jdk.incubator.vector.IntVector;
 import org.openjdk.jmh.annotations.*;
 
 import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-import static com.openkappa.panama.vectorbenchmarks.Util.*;
+import static com.openkappa.panama.vectorbenchmarks.Util.newSortedIntArray;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
@@ -181,108 +180,6 @@ public class IntIntersection {
     return pos;
   }
 
-  int shotgunSearchVector4(final int[] smallSet, final int[] largeSet, int[] answer) {
-    int pos = 0, li = 0, si = 0;
-    if (0 == smallSet.length) {
-      return 0;
-    }
-    while ((si + 4 <= smallSet.length) && (li < largeSet.length)) {
-      var target = IntVector.fromArray(I128, smallSet, si);
-      int n = largeSet.length - li;
-      if (n == 0)
-        return pos;
-      var base = I128.broadcast(li);
-      while (n > 1) {
-        int half = n >>> 1;
-        base = base.add(half);
-        var gathered = I128.scalars(
-                largeSet[base.get(3)],
-                largeSet[base.get(2)],
-                largeSet[base.get(1)],
-                largeSet[base.get(0)]);
-        var mask = gathered.greaterThanEq(target);
-        base = base.sub(half, mask);
-        n -= half;
-      }
-      var gathered = I128.scalars(
-              largeSet[base.get(3)],
-              largeSet[base.get(2)],
-              largeSet[base.get(1)],
-              largeSet[base.get(0)]);
-      var mask = gathered.equal(target);
-      if (mask.getElement(3)) {
-        answer[pos++] = gathered.get(3);
-      }
-      if (mask.getElement(2)) {
-        answer[pos++] = gathered.get(2);
-      }
-      if (mask.getElement(1)) {
-        answer[pos++] = gathered.get(1);
-      }
-      if (mask.getElement(0)) {
-        answer[pos++] = gathered.get(0);
-      }
-      si += 4;
-      li = base.get(0);
-    }
-    if ((si < smallSet.length) && (li < largeSet.length)) {
-      int sVal = smallSet[si];
-      int index = Arrays.binarySearch(largeSet, li, largeSet.length, sVal);
-      if (index >= 0)
-        answer[pos++] = sVal;
-    }
-    return pos;
-  }
-
-
-  int shotgunSearchVector8(final int[] smallSet, final int[] largeSet, int[] answer) {
-    int pos = 0, li = 0, si = 0;
-    if (0 == smallSet.length) {
-      return 0;
-    }
-    while ((si + 8 <= smallSet.length) && (li < largeSet.length)) {
-      var target = IntVector.fromArray(I256, smallSet, si);
-      int n = largeSet.length - li;
-      if (n == 0)
-        return pos;
-      var base = I256.broadcast(li);
-      while (n > 1) {
-        int half = n >>> 1;
-        base = base.add(half);
-        var gathered = I256.scalars(
-                largeSet[base.get(7)],
-                largeSet[base.get(6)],
-                largeSet[base.get(5)],
-                largeSet[base.get(4)],
-                largeSet[base.get(3)],
-                largeSet[base.get(2)],
-                largeSet[base.get(1)],
-                largeSet[base.get(0)]);
-        base = base.sub(half, gathered.greaterThanEq(target));
-        n -= half;
-      }
-      var gathered = I256.scalars(
-              largeSet[base.get(7)],
-              largeSet[base.get(6)],
-              largeSet[base.get(5)],
-              largeSet[base.get(4)],
-              largeSet[base.get(3)],
-              largeSet[base.get(2)],
-              largeSet[base.get(1)],
-              largeSet[base.get(0)]);
-      gathered.intoArray(answer, pos, gathered.equal(target));
-      pos += gathered.equal(target).trueCount();
-      si += 8;
-      li = base.get(0);
-    }
-    if ((si < smallSet.length) && (li < largeSet.length)) {
-      int sVal = smallSet[si];
-      int index = Arrays.binarySearch(largeSet, li, largeSet.length, sVal);
-      if (index >= 0)
-        answer[pos++] = sVal;
-    }
-    return pos;
-  }
 
 
   int shotgunSearch1(final int[] smallSet, final int[] largeSet, int[] answer) {

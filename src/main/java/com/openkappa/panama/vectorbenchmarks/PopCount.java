@@ -5,6 +5,7 @@ import jdk.incubator.vector.IntVector;
 import jdk.incubator.vector.LongVector;
 import org.openjdk.jmh.annotations.*;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -51,18 +52,18 @@ public class PopCount {
     int bitCount = 0;
     int block = 256;
     for (int i = 0; i < data.length; i += block) {
-      var lo1 = I256.zero();
-      var hi1 = I256.zero();
-      var lo2 = I256.zero();
-      var hi2 = I256.zero();
+      var lo1 = IntVector.zero(I256);
+      var hi1 = IntVector.zero(I256);
+      var lo2 = IntVector.zero(I256);
+      var hi2 = IntVector.zero(I256);
       var counts = ByteVector.fromArray(B256, NIBBLE_COUNTS, 0);
       for (int j = 0; j < block; j += 8) {
         var v1 = (IntVector) LongVector.fromArray(L256, data, i + j).reinterpret(I256);
         var v2 = (IntVector) LongVector.fromArray(L256, data, i + j + 4).reinterpret(I256);
         lo1 = lo1.add(counts.rearrange(v1.and(0x0F0F0F0F).reinterpret(B256).toShuffle()).reinterpret(I256));
-        hi1 = hi1.add(counts.rearrange(v1.shiftR(4).and(0x0F0F0F0F).reinterpret(B256).toShuffle()).reinterpret(I256));
+        hi1 = hi1.add(counts.rearrange(v1.shiftRight(4).and(0x0F0F0F0F).reinterpret(B256).toShuffle()).reinterpret(I256));
         lo2 = lo2.add(counts.rearrange(v2.and(0x0F0F0F0F).reinterpret(B256).toShuffle()).reinterpret(I256));
-        hi2 = hi2.add(counts.rearrange(v2.shiftR(4).and(0x0F0F0F0F).reinterpret(B256).toShuffle()).reinterpret(I256));
+        hi2 = hi2.add(counts.rearrange(v2.shiftRight(4).and(0x0F0F0F0F).reinterpret(B256).toShuffle()).reinterpret(I256));
       }
       bitCount += unsignedSum(lo1);
       bitCount += unsignedSum(hi1);
@@ -75,10 +76,10 @@ public class PopCount {
   private int unsignedSum(IntVector bv) {
     // convert to LongVector because Vector.get is slow
     var lv = (LongVector) bv.reinterpret(L256);
-    return sumBytes(lv.get(0))
-         + sumBytes(lv.get(1))
-         + sumBytes(lv.get(2))
-         + sumBytes(lv.get(3));
+    return sumBytes(lv.lane(0))
+         + sumBytes(lv.lane(1))
+         + sumBytes(lv.lane(2))
+         + sumBytes(lv.lane(3));
   }
 
   private int sumBytes(long w) {
@@ -109,11 +110,11 @@ public class PopCount {
 
 
   public int harleySeal(long[] data) {
-    var total = L256.zero();
-    var ones = L256.zero();
-    var twos = L256.zero();
-    var fours = L256.zero();
-    var eights = L256.zero();
+    var total = LongVector.zero(L256);
+    var ones = LongVector.zero(L256);
+    var twos = LongVector.zero(L256);
+    var fours = LongVector.zero(L256);
+    var eights = LongVector.zero(L256);
     LongVector sixteens;
     LongVector twosA;
     LongVector twosB;
@@ -214,21 +215,21 @@ public class PopCount {
       eights = u15.xor(c15);
       total = total.add(popcount256(sixteens));
     }
-    total = total.shiftL(4);
-    total = total.add(popcount256(eights).shiftL(3));
-    total = total.add(popcount256(fours).shiftL(2));
-    total = total.add(popcount256(twos).shiftL(1));
+    total = total.shiftLeft(4);
+    total = total.add(popcount256(eights).shiftLeft(3));
+    total = total.add(popcount256(fours).shiftLeft(2));
+    total = total.add(popcount256(twos).shiftLeft(1));
     total = total.add(popcount256(ones));
-    return (int)total.addAll();
+    return (int)total.addLanes();
   }
 
   private LongVector popcount256(LongVector vector) {
     var bytes = (ByteVector)vector.reinterpret(B256);
     var lookupPos = ByteVector.fromArray(B256, LOOKUP_POS, 0);
     var lookupNeg = ByteVector.fromArray(B256, LOOKUP_NEG, 0);
-    var lowMask = B256.broadcast((byte)0x0F);
+    var lowMask = ByteVector.broadcast(B256, (byte)0x0F);
     return (LongVector)lookupPos.rearrange(bytes.and(lowMask).toShuffle())
-            .add(lookupNeg.rearrange(bytes.shiftR(4).and(lowMask).toShuffle()))
+            .add(lookupNeg.rearrange(bytes.shiftRight(4).and(lowMask).toShuffle()))
             .reinterpret(L256);
   }
 

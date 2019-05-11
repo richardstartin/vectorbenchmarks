@@ -27,12 +27,12 @@ public class HorizontalSum {
 
   @Benchmark
   public float horizontalSumPanama() {
-    var sum = F256.zero();
+    var sum = FloatVector.zero(F256);
     for (int i = 0; i < size; i += F256.length()) {
       var l = FloatVector.fromArray(F256, data, i);
       sum = sum.add(l);
     }
-    return sum.addAll();
+    return sum.addLanes();
   }
 
   @Benchmark

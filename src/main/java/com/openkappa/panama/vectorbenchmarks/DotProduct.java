@@ -49,13 +49,13 @@ public class DotProduct {
 
   @Benchmark
   public float vector() {
-    var sum = F256.zero();
+    var sum = FloatVector.zero(F256);
     for (int i = 0; i < size; i += F256.length()) {
       var l = FloatVector.fromArray(F256, left, i);
       var r = FloatVector.fromArray(F256, right, i);
       sum = l.fma(r, sum);
     }
-    return sum.addAll();
+    return sum.addLanes();
   }
 
   @Benchmark
@@ -83,10 +83,10 @@ public class DotProduct {
   }
 
   private float vectorUnrolled() {
-    var sum1 = F256.zero();
-    var sum2 = F256.zero();
-    var sum3 = F256.zero();
-    var sum4 = F256.zero();
+    var sum1 = FloatVector.zero(F256);
+    var sum2 = FloatVector.zero(F256);
+    var sum3 = FloatVector.zero(F256);
+    var sum4 = FloatVector.zero(F256);
     int width = F256.length();
     for (int i = 0; i < size; i += width * 4) {
       sum1 = FloatVector.fromArray(F256, left, i).fma(FloatVector.fromArray(F256, right, i), sum1);
@@ -94,7 +94,7 @@ public class DotProduct {
       sum3 = FloatVector.fromArray(F256, left, i + width * 2).fma(FloatVector.fromArray(F256, right, i + width * 2), sum3);
       sum4 = FloatVector.fromArray(F256, left, i + width * 3).fma(FloatVector.fromArray(F256, right, i + width * 3), sum4);
     }
-    return sum1.addAll() + sum2.addAll() + sum3.addAll() + sum4.addAll();
+    return sum1.addLanes() + sum2.addLanes() + sum3.addLanes() + sum4.addLanes();
   }
 
   @Benchmark

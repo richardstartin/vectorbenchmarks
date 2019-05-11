@@ -63,29 +63,29 @@ public class LaxByteHashCode {
 
   @Benchmark
   public int hashCodeVectorAPIDependencies() {
-    var next = I256.broadcast(POWERS_OF_31[8]);
+    var next = IntVector.broadcast(I256, POWERS_OF_31[8]);
     var coefficients = IntVector.fromArray(I256, POWERS_OF_31, 0);
-    var acc = I256.zero();
+    var acc = IntVector.zero(I256);
     for (int i = 0; i < data.length; i += B256.length()) {
       acc = acc.add(coefficients.mul(ByteVector.fromArray(B256, data, i).reinterpret(I256)));
       coefficients = coefficients.mul(next);
     }
-    return acc.addAll();
+    return acc.addLanes();
   }
 
   @Benchmark
   public int hashCodeVectorAPINoDependencies() {
-    var next = I256.broadcast(POWERS_OF_31[8]);
+    var next = IntVector.broadcast(I256, POWERS_OF_31[8]);
     var coefficients1 = IntVector.fromArray(I256, POWERS_OF_31, 0);
     var coefficients2 = coefficients1.mul(next);
     var coefficients3 = coefficients2.mul(next);
     var coefficients4 = coefficients3.mul(next);
     next = next.mul(next);
     next = next.mul(next);
-    var acc1 = I256.zero();
-    var acc2 = I256.zero();
-    var acc3 = I256.zero();
-    var acc4 = I256.zero();
+    var acc1 = IntVector.zero(I256);
+    var acc2 = IntVector.zero(I256);
+    var acc3 = IntVector.zero(I256);
+    var acc4 = IntVector.zero(I256);
     for (int i = 0; i < data.length; i += B256.length() * 4) {
       acc1 = acc1.add(coefficients1.mul(ByteVector.fromArray(B256, data, i).reinterpret(I256)));
       acc2 = acc2.add(coefficients2.mul(ByteVector.fromArray(B256, data, i + B256.length()).reinterpret(I256)));
@@ -96,7 +96,7 @@ public class LaxByteHashCode {
       coefficients3 = coefficients3.mul(next);
       coefficients4 = coefficients4.mul(next);
     }
-    return acc1.add(acc2).add(acc3).add(acc4).addAll();
+    return acc1.add(acc2).add(acc3).add(acc4).addLanes();
   }
 
   @Benchmark

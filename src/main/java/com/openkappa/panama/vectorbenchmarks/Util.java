@@ -8,8 +8,8 @@ import java.util.Arrays;
 import java.util.SplittableRandom;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static jdk.incubator.vector.Vector.Shape.S_128_BIT;
-import static jdk.incubator.vector.Vector.Shape.S_256_BIT;
+import static jdk.incubator.vector.VectorShape.S_128_BIT;
+import static jdk.incubator.vector.VectorShape.S_256_BIT;
 
 public class Util {
 
@@ -144,32 +144,23 @@ public class Util {
     return bitmap;
   }
 
-  public static final IntVector.IntSpecies I128 =
-          (IntVector.IntSpecies) Vector.Species.of(int.class, S_128_BIT);
+  public static final VectorSpecies<Integer> I128 = VectorSpecies.of(int.class, S_128_BIT);
 
-  public static final IntVector.IntSpecies I256 =
-          (IntVector.IntSpecies) Vector.Species.of(int.class, S_256_BIT);
+  public static final VectorSpecies<Integer> I256 = VectorSpecies.of(int.class, S_256_BIT);
 
-  public static final FloatVector.FloatSpecies F256 =
-          (FloatVector.FloatSpecies) Vector.Species.of(float.class, S_256_BIT);
+  public static final VectorSpecies<Float> F256 = VectorSpecies.of(float.class, S_256_BIT);
 
-  public static final DoubleVector.DoubleSpecies D256 =
-          (DoubleVector.DoubleSpecies) Vector.Species.of(double.class, S_256_BIT);
+  public static final VectorSpecies<Double> D256 = VectorSpecies.of(double.class, S_256_BIT);
 
-  public static final LongVector.LongSpecies L256 =
-          (LongVector.LongSpecies) Vector.Species.of(long.class, S_256_BIT);
+  public static final VectorSpecies<Long> L256 = VectorSpecies.of(long.class, S_256_BIT);
 
-  public static final ByteVector.ByteSpecies B256 =
-          (ByteVector.ByteSpecies) Vector.Species.of(byte.class, S_256_BIT);
+  public static final VectorSpecies<Byte> B256 = VectorSpecies.of(byte.class, S_256_BIT);
 
-  public static final ByteVector.ByteSpecies B128 =
-          (ByteVector.ByteSpecies) Vector.Species.of(byte.class, S_128_BIT);
+  public static final VectorSpecies<Byte> B128 = VectorSpecies.of(byte.class, S_128_BIT);
 
-  public static final ShortVector.ShortSpecies S128 =
-          (ShortVector.ShortSpecies) Vector.Species.of(short.class, S_128_BIT);
+  public static final VectorSpecies<Short> S128 = VectorSpecies.of(short.class, S_128_BIT);
 
-  public static final LongVector.LongSpecies L128 =
-          (LongVector.LongSpecies) Vector.Species.of(long.class, S_128_BIT);
+  public static final VectorSpecies<Long> L128 = VectorSpecies.of(long.class, S_128_BIT);
 
   public static ByteBuffer allocateDirectAligned(final int capacity, final int alignment) {
     ByteBuffer buffer = ByteBuffer.allocateDirect(capacity + alignment).order(ByteOrder.nativeOrder( ));

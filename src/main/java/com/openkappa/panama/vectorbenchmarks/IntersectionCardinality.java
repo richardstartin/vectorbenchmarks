@@ -101,10 +101,10 @@ public class IntersectionCardinality {
     int cardinality = 0;
     for (int i = 0; i < size && i < left.length && i < right.length; i += 4) {
       var intersection = LongVector.fromArray(L256, left, i).and(LongVector.fromArray(L256, right, i));
-      cardinality += Long.bitCount(intersection.get(0));
-      cardinality += Long.bitCount(intersection.get(1));
-      cardinality += Long.bitCount(intersection.get(2));
-      cardinality += Long.bitCount(intersection.get(3));
+      cardinality += Long.bitCount(intersection.lane(0));
+      cardinality += Long.bitCount(intersection.lane(1));
+      cardinality += Long.bitCount(intersection.lane(2));
+      cardinality += Long.bitCount(intersection.lane(3));
     }
     return cardinality;
   }
@@ -117,14 +117,14 @@ public class IntersectionCardinality {
     for (int i = 0; i < size && i < left.length && i < right.length; i += 8) {
       var intersection1 = LongVector.fromArray(L256, left, i).and(LongVector.fromArray(L256, right, i));
       var intersection2 = LongVector.fromArray(L256, left, i + 4).and(LongVector.fromArray(L256, right, i + 4));
-      cardinality1 += Long.bitCount(intersection1.get(0));
-      cardinality2 += Long.bitCount(intersection1.get(1));
-      cardinality3 += Long.bitCount(intersection1.get(2));
-      cardinality1 += Long.bitCount(intersection1.get(3));
-      cardinality2 += Long.bitCount(intersection2.get(0));
-      cardinality3 += Long.bitCount(intersection2.get(1));
-      cardinality1 += Long.bitCount(intersection2.get(2));
-      cardinality2 += Long.bitCount(intersection2.get(3));
+      cardinality1 += Long.bitCount(intersection1.lane(0));
+      cardinality2 += Long.bitCount(intersection1.lane(1));
+      cardinality3 += Long.bitCount(intersection1.lane(2));
+      cardinality1 += Long.bitCount(intersection1.lane(3));
+      cardinality2 += Long.bitCount(intersection2.lane(0));
+      cardinality3 += Long.bitCount(intersection2.lane(1));
+      cardinality1 += Long.bitCount(intersection2.lane(2));
+      cardinality2 += Long.bitCount(intersection2.lane(3));
     }
     return cardinality1 + cardinality2 + cardinality3;
   }
