@@ -7,11 +7,12 @@ import java.util.concurrent.TimeUnit;
 
 import static com.openkappa.panama.vectorbenchmarks.Util.F256;
 import static com.openkappa.panama.vectorbenchmarks.Util.newFloatVector;
+import static jdk.incubator.vector.VectorOperators.ADD;
 
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Benchmark)
-@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector", "-XX:TypeProfileLevel=111"})
+@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector"})
 public class HorizontalSum {
 
   @Param({"1024", "65536"})
@@ -32,7 +33,7 @@ public class HorizontalSum {
       var l = FloatVector.fromArray(F256, data, i);
       sum = sum.add(l);
     }
-    return sum.addLanes();
+    return sum.reduceLanes(ADD);
   }
 
   @Benchmark

@@ -12,7 +12,7 @@ import static com.openkappa.panama.vectorbenchmarks.Util.newIntVector;
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Benchmark)
-@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector", "-XX:TypeProfileLevel=111"})
+@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector"})
 public class MaxInts {
 
   private int[] input;

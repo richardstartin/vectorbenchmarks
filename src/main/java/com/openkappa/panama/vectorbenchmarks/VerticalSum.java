@@ -1,6 +1,7 @@
 package com.openkappa.panama.vectorbenchmarks;
 
 import jdk.incubator.vector.FloatVector;
+import jdk.incubator.vector.VectorOperators;
 import org.openjdk.jmh.annotations.*;
 
 import java.nio.ByteBuffer;
@@ -8,10 +9,11 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import static com.openkappa.panama.vectorbenchmarks.Util.*;
+import static jdk.incubator.vector.VectorOperators.NE;
 
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-@Fork(value = 3, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector", "-XX:TypeProfileLevel=111",
+@Fork(value = 3, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector",
         "-XX:-TieredCompilation",
         "-XX:+UseVectorCmov",
         "-XX:+UseCMoveUnconditionally",
@@ -90,7 +92,7 @@ public class VerticalSum {
     for (int i = 0; i < state.size; i += F256.length()) {
       var l = FloatVector.fromArray(F256, state.left, i);
       var r = FloatVector.fromArray(F256, state.right, i);
-      var mask = l.notEqual(l).or(r.notEqual(r)).not();
+      var mask = l.compare(NE, l).or(r.compare(NE, r)).not();
       l.add(r).intoArray(state.result, i, mask);
     }
     return state.result;
@@ -101,7 +103,7 @@ public class VerticalSum {
     for (int i = 0; i < state.size; i += F256.length()) {
       var l = FloatVector.fromArray(F256, state.left, i);
       var r = FloatVector.fromArray(F256, state.right, i);
-      l.blend(0f, l.notEqual(l)).add(r.blend(0f, r.notEqual(r))).intoArray(state.result, i);
+      l.blend(0f, l.compare(NE, l)).add(r.blend(0f, r.compare(NE, r))).intoArray(state.result, i);
     }
     return state.result;
   }

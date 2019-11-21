@@ -10,12 +10,13 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import static com.openkappa.panama.vectorbenchmarks.Util.*;
+import static jdk.incubator.vector.VectorOperators.*;
 
 @BenchmarkMode(Mode.Throughput)
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector",
-        "-XX:TypeProfileLevel=111", "-XX:-TieredCompilation", "-Djdk.incubator.vector.VECTOR_ACCESS_OOB_CHECK=0"})
+         "-XX:-TieredCompilation", "-Djdk.incubator.vector.VECTOR_ACCESS_OOB_CHECK=0"})
 public class PopCount {
 
   @Param({"1024"})
@@ -58,12 +59,12 @@ public class PopCount {
       var hi2 = IntVector.zero(I256);
       var counts = ByteVector.fromArray(B256, NIBBLE_COUNTS, 0);
       for (int j = 0; j < block; j += 8) {
-        var v1 = (IntVector) LongVector.fromArray(L256, data, i + j).reinterpret(I256);
-        var v2 = (IntVector) LongVector.fromArray(L256, data, i + j + 4).reinterpret(I256);
-        lo1 = lo1.add(counts.rearrange(v1.and(0x0F0F0F0F).reinterpret(B256).toShuffle()).reinterpret(I256));
-        hi1 = hi1.add(counts.rearrange(v1.shiftRight(4).and(0x0F0F0F0F).reinterpret(B256).toShuffle()).reinterpret(I256));
-        lo2 = lo2.add(counts.rearrange(v2.and(0x0F0F0F0F).reinterpret(B256).toShuffle()).reinterpret(I256));
-        hi2 = hi2.add(counts.rearrange(v2.shiftRight(4).and(0x0F0F0F0F).reinterpret(B256).toShuffle()).reinterpret(I256));
+        var v1 = (IntVector) LongVector.fromArray(L256, data, i + j).reinterpretAsInts();
+        var v2 = (IntVector) LongVector.fromArray(L256, data, i + j + 4).reinterpretAsInts();
+        lo1 = lo1.add(counts.rearrange(v1.and(0x0F0F0F0F).reinterpretAsBytes().toShuffle()).reinterpretAsInts());
+        hi1 = hi1.add(counts.rearrange(v1.lanewise(LSHR, 4).and(0x0F0F0F0F).reinterpretAsBytes().toShuffle()).reinterpretAsInts());
+        lo2 = lo2.add(counts.rearrange(v2.and(0x0F0F0F0F).reinterpretAsBytes().toShuffle()).reinterpretAsInts());
+        hi2 = hi2.add(counts.rearrange(v2.lanewise(LSHR, 4).and(0x0F0F0F0F).reinterpretAsBytes().toShuffle()).reinterpretAsInts());
       }
       bitCount += unsignedSum(lo1);
       bitCount += unsignedSum(hi1);
@@ -75,7 +76,7 @@ public class PopCount {
 
   private int unsignedSum(IntVector bv) {
     // convert to LongVector because Vector.get is slow
-    var lv = (LongVector) bv.reinterpret(L256);
+    var lv = (LongVector) bv.reinterpretAsLongs();
     return sumBytes(lv.lane(0))
          + sumBytes(lv.lane(1))
          + sumBytes(lv.lane(2))
@@ -126,111 +127,111 @@ public class PopCount {
       var a1 = LongVector.fromArray(L256, data, i);
       var b1 = ones;
       var c1 = LongVector.fromArray(L256, data, i + 1 * 4);
-      var u1 = a1.xor(b1);
+      var u1 = a1.lanewise(XOR, b1);
       twosA = a1.and(b1).or(u1.and(c1));
-      ones = u1.xor(c1);
+      ones = u1.lanewise(XOR, c1);
       var a2 = ones;
       var b2 = LongVector.fromArray(L256, data, i + 2 * 4);
       var c2 = LongVector.fromArray(L256, data, i + 3 * 4);
-      var u2 = a2.xor(b2);
+      var u2 = a2.lanewise(XOR, b2);
       twosB = a2.and(b2).or(u2.and(c2));
-      ones = u2.xor(c2);
+      ones = u2.lanewise(XOR, c2);
       var a3 = twos;
       var b3 = twosA;
       var c3 = twosB;
-      var u3 = a3.xor(b3);
+      var u3 = a3.lanewise(XOR, b3);
       foursA = a3.and(b3).or(u3.and(c3));
-      twos = u3.xor(c3);
+      twos = u3.lanewise(XOR, c3);
       var a4 = ones;
       var b4 = LongVector.fromArray(L256, data, i + 4 * 4);
       var c4 = LongVector.fromArray(L256, data, i + 5 * 4);
-      var u4 = a4.xor(b4);
+      var u4 = a4.lanewise(XOR, b4);
       twosA = a4.and(b4).or(u4.and(c4));
-      ones = u4.xor(c4);
+      ones = u4.lanewise(XOR, c4);
       var a5 = ones;
       var b5 = LongVector.fromArray(L256, data, i + 6 * 4);
       var c5 = LongVector.fromArray(L256, data, i + 7 * 4);
-      var u5 = a5.xor(b5);
+      var u5 = a5.lanewise(XOR, b5);
       twosB = a5.and(b5).or(u5.and(c5));
-      ones = u5.xor(c5);
+      ones = u5.lanewise(XOR, c5);
       var a6 = twos;
       var b6 = twosA;
       var c6 = twosB;
-      var u6 = a6.xor(b6);
+      var u6 = a6.lanewise(XOR, b6);
       foursB = a6.and(b6).or(u6.and(c6));
-      twos = u6.xor(c6);
+      twos = u6.lanewise(XOR, c6);
       var a7 = fours;
       var b7 = foursA;
       var c7 = foursB;
-      var u7 = a7.xor(b7);
+      var u7 = a7.lanewise(XOR, b7);
       eightsA = a7.and(b7).or(u7.and(c7));
-      fours = u7.xor(c7);
+      fours = u7.lanewise(XOR, c7);
       var a8 = ones;
       var b8 = LongVector.fromArray(L256, data, i + 8 * 4);
       var c8 = LongVector.fromArray(L256, data, i + 9 * 4);
-      var u8 = a8.xor(b8);
+      var u8 = a8.lanewise(XOR, b8);
       twosA = a8.and(b8).or(u8.and(c8));
-      ones = u8.xor(c8);
+      ones = u8.lanewise(XOR, c8);
       var a9 = ones;
       var b9 = LongVector.fromArray(L256, data, i + 10 * 4);
       var c9 = LongVector.fromArray(L256, data, i + 11 * 4);
-      var u9 = a9.xor(b9);
+      var u9 = a9.lanewise(XOR, b9);
       twosB = a9.and(b9).or(u9.and(c9));
-      ones = u9.xor(c9);
+      ones = u9.lanewise(XOR, c9);
       var a10 = twos;
       var b10 = twosA;
       var c10 = twosB;
-      var u10 = a10.xor(b10);
+      var u10 = a10.lanewise(XOR, b10);
       foursA = a10.and(b10).or(u10.and(c10));
-      twos = u10.xor(c10);
+      twos = u10.lanewise(XOR, c10);
       var a11 = ones;
       var b11 = LongVector.fromArray(L256, data, i + 12 * 4);
       var c11 = LongVector.fromArray(L256, data, i + 13 * 4);
-      var u11 = a11.xor(b11);
+      var u11 = a11.lanewise(XOR, b11);
       twosA = a11.and(b11).or(u11.and(c11));
-      ones = u11.xor(c11);
+      ones = u11.lanewise(XOR, c11);
       var a12 = ones;
       var b12 = LongVector.fromArray(L256, data, i + 14 * 4);
       var c12 = LongVector.fromArray(L256, data, i + 15 * 4);
-      var u12 = a12.xor(b12);
+      var u12 = a12.lanewise(XOR, b12);
       twosB = a12.and(b12).or(u12.and(c12));
-      ones = u12.xor(c12);
+      ones = u12.lanewise(XOR, c12);
       var a13 = twos;
       var b13 = twosA;
       var c13 = twosB;
-      var u13 = a13.xor(b13);
+      var u13 = a13.lanewise(XOR, b13);
       foursB = a13.and(b13).or(u13.and(c13));
-      twos = u13.xor(c13);
+      twos = u13.lanewise(XOR, c13);
       var a14 = fours;
       var b14 = foursA;
       var c14 = foursB;
-      var u14 = a14.xor(b14);
+      var u14 = a14.lanewise(XOR, b14);
       eightsB = a14.and(b14).or(u14.and(c14));
-      fours = u14.xor(c14);
+      fours = u14.lanewise(XOR, c14);
       var a15 = eights;
       var b15 = eightsA;
       var c15 = eightsB;
-      var u15 = a15.xor(b15);
+      var u15 = a15.lanewise(XOR, b15);
       sixteens = a15.and(b15).or(u15.and(c15));
-      eights = u15.xor(c15);
+      eights = u15.lanewise(XOR, c15);
       total = total.add(popcount256(sixteens));
     }
-    total = total.shiftLeft(4);
-    total = total.add(popcount256(eights).shiftLeft(3));
-    total = total.add(popcount256(fours).shiftLeft(2));
-    total = total.add(popcount256(twos).shiftLeft(1));
+    total = total.lanewise(LSHL, 4);
+    total = total.add(popcount256(eights).lanewise(LSHL,3));
+    total = total.add(popcount256(fours).lanewise(LSHL,2));
+    total = total.add(popcount256(twos).lanewise(LSHL,1));
     total = total.add(popcount256(ones));
-    return (int)total.addLanes();
+    return (int)total.reduceLanes(ADD);
   }
 
   private LongVector popcount256(LongVector vector) {
-    var bytes = (ByteVector)vector.reinterpret(B256);
+    var bytes = (ByteVector)vector.reinterpretAsBytes();
     var lookupPos = ByteVector.fromArray(B256, LOOKUP_POS, 0);
     var lookupNeg = ByteVector.fromArray(B256, LOOKUP_NEG, 0);
     var lowMask = ByteVector.broadcast(B256, (byte)0x0F);
     return (LongVector)lookupPos.rearrange(bytes.and(lowMask).toShuffle())
-            .add(lookupNeg.rearrange(bytes.shiftRight(4).and(lowMask).toShuffle()))
-            .reinterpret(L256);
+            .add(lookupNeg.rearrange(bytes.lanewise(LSHR, 4).and(lowMask).toShuffle()))
+            .reinterpretAsLongs();
   }
 
   private static byte[] LOOKUP_POS = new byte[] {

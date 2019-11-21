@@ -11,7 +11,7 @@ import static com.openkappa.panama.vectorbenchmarks.Util.newIntRowMatrix;
 
 @BenchmarkMode(Mode.Throughput)
 @State(Scope.Benchmark)
-@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector", "-XX:TypeProfileLevel=111", "-XX:-TieredCompilation"})
+@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector",  "-XX:-TieredCompilation"})
 public class IntMatrixMatrixMultiplication {
 
 

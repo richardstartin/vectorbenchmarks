@@ -8,11 +8,12 @@ import java.util.concurrent.TimeUnit;
 
 import static com.openkappa.panama.vectorbenchmarks.Util.I256;
 import static com.openkappa.panama.vectorbenchmarks.Util.newIntBitmap;
+import static jdk.incubator.vector.VectorOperators.XOR;
 
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Benchmark)
-@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector", "-XX:TypeProfileLevel=111"})
+@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector"})
 public class BitmapLogicals {
 
 
@@ -82,7 +83,7 @@ public class BitmapLogicals {
   @Benchmark
   public void differencePanamaInt(Blackhole bh) {
     for (int i = 0; i < size; i += I256.length()) {
-      IntVector.fromArray(I256, left, i).xor(IntVector.fromArray(I256, right, i)).intoArray(result, i);
+      IntVector.fromArray(I256, left, i).lanewise(XOR, IntVector.fromArray(I256, right, i)).intoArray(result, i);
     }
     bh.consume(result);
   }

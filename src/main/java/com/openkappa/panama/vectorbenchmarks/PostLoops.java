@@ -6,6 +6,7 @@ import org.openjdk.jmh.annotations.*;
 import java.util.concurrent.TimeUnit;
 
 import static com.openkappa.panama.vectorbenchmarks.Util.F256;
+import static jdk.incubator.vector.VectorOperators.ADD;
 
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -87,7 +88,7 @@ public class PostLoops {
     FloatVector.zero(F256).intoArray(buffer, F256.length());
     FloatVector.zero(F256).intoArray(buffer, F256.length() * 2);
     FloatVector.zero(F256).intoArray(buffer, F256.length() * 3);
-    return sum1.add(l1).add(sum2.add(l2)).add(sum3.add(l3).add(sum4.add(l4))).addLanes();
+    return sum1.add(l1).add(sum2.add(l2)).add(sum3.add(l3).add(sum4.add(l4))).reduceLanes(ADD);
   }
 
   private float mainLoop(int size, float[] left, float[] right) {
@@ -102,7 +103,7 @@ public class PostLoops {
       sum3 = FloatVector.fromArray(F256, left, i + width * 2).fma(FloatVector.fromArray(F256, right, i + width * 2), sum3);
       sum4 = FloatVector.fromArray(F256, left, i + width * 3).fma(FloatVector.fromArray(F256, right, i + width * 3), sum4);
     }
-    return sum1.add(sum2).add(sum3.add(sum4)).addLanes();
+    return sum1.add(sum2).add(sum3.add(sum4)).reduceLanes(ADD);
   }
 
   private float scalarPostLoop(int start, float[] left, float[] right) {
@@ -132,6 +133,6 @@ public class PostLoops {
     FloatVector.zero(F256).intoArray(buffer, F256.length());
     FloatVector.zero(F256).intoArray(buffer, F256.length() * 2);
     FloatVector.zero(F256).intoArray(buffer, F256.length() * 3);
-    return l1.add(l2).add(l3.add(l4)).addLanes();
+    return l1.add(l2).add(l3.add(l4)).reduceLanes(ADD);
   }
 }

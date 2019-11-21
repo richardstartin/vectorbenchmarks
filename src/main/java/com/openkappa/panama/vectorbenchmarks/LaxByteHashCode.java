@@ -13,11 +13,12 @@ import java.util.concurrent.TimeUnit;
 import static com.openkappa.panama.vectorbenchmarks.Util.B256;
 import static com.openkappa.panama.vectorbenchmarks.Util.I256;
 import static com.openkappa.panama.vectorbenchmarks.Util.newByteArray;
+import static jdk.incubator.vector.VectorOperators.ADD;
 
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Benchmark)
-@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector", "-XX:TypeProfileLevel=111"})
+@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector"})
 public class LaxByteHashCode {
 
   private static final Unsafe UNSAFE;
@@ -67,10 +68,10 @@ public class LaxByteHashCode {
     var coefficients = IntVector.fromArray(I256, POWERS_OF_31, 0);
     var acc = IntVector.zero(I256);
     for (int i = 0; i < data.length; i += B256.length()) {
-      acc = acc.add(coefficients.mul(ByteVector.fromArray(B256, data, i).reinterpret(I256)));
+      acc = acc.add(coefficients.mul(ByteVector.fromArray(B256, data, i).reinterpretAsInts()));
       coefficients = coefficients.mul(next);
     }
-    return acc.addLanes();
+    return acc.reduceLanes(ADD);
   }
 
   @Benchmark
@@ -87,16 +88,16 @@ public class LaxByteHashCode {
     var acc3 = IntVector.zero(I256);
     var acc4 = IntVector.zero(I256);
     for (int i = 0; i < data.length; i += B256.length() * 4) {
-      acc1 = acc1.add(coefficients1.mul(ByteVector.fromArray(B256, data, i).reinterpret(I256)));
-      acc2 = acc2.add(coefficients2.mul(ByteVector.fromArray(B256, data, i + B256.length()).reinterpret(I256)));
-      acc3 = acc3.add(coefficients3.mul(ByteVector.fromArray(B256, data, i + 2 * B256.length()).reinterpret(I256)));
-      acc4 = acc4.add(coefficients4.mul(ByteVector.fromArray(B256, data, i + 3 * B256.length()).reinterpret(I256)));
+      acc1 = acc1.add(coefficients1.mul(ByteVector.fromArray(B256, data, i).reinterpretAsInts()));
+      acc2 = acc2.add(coefficients2.mul(ByteVector.fromArray(B256, data, i + B256.length()).reinterpretAsInts()));
+      acc3 = acc3.add(coefficients3.mul(ByteVector.fromArray(B256, data, i + 2 * B256.length()).reinterpretAsInts()));
+      acc4 = acc4.add(coefficients4.mul(ByteVector.fromArray(B256, data, i + 3 * B256.length()).reinterpretAsInts()));
       coefficients1 = coefficients1.mul(next);
       coefficients2 = coefficients2.mul(next);
       coefficients3 = coefficients3.mul(next);
       coefficients4 = coefficients4.mul(next);
     }
-    return acc1.add(acc2).add(acc3).add(acc4).addLanes();
+    return acc1.add(acc2).add(acc3).add(acc4).reduceLanes(ADD);
   }
 
   @Benchmark

@@ -10,7 +10,7 @@ import static com.openkappa.panama.vectorbenchmarks.Util.newSortedIntArray;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector", "-XX:TypeProfileLevel=111"})
+@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector"})
 public class IntIntersection {
 
   @State(Scope.Benchmark)

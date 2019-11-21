@@ -40,12 +40,4 @@ public class DirectBitmap {
     }
     bh.consume(result);
   }
-
-  @Benchmark
-  public void intersectVector(Blackhole bh) {
-    for (int i = 0; i < size; i += 8 * 4) {
-      LongVector.fromByteBuffer(L256, left, i).and(LongVector.fromByteBuffer(L256, right, i)).intoByteBuffer(result, i);
-    }
-    bh.consume(result);
-  }
 }

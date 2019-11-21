@@ -7,13 +7,14 @@ import java.util.concurrent.TimeUnit;
 
 import static com.openkappa.panama.vectorbenchmarks.Util.F256;
 import static com.openkappa.panama.vectorbenchmarks.Util.newFloatVector;
+import static jdk.incubator.vector.VectorOperators.ADD;
 
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgsPrepend = {
         "--add-modules=jdk.incubator.vector",
-        "-XX:TypeProfileLevel=111",
+
         "-Djdk.incubator.vector.VECTOR_ACCESS_OOB_CHECK=0"
 })
 public class DotProduct {
@@ -55,7 +56,7 @@ public class DotProduct {
       var r = FloatVector.fromArray(F256, right, i);
       sum = l.fma(r, sum);
     }
-    return sum.addLanes();
+    return sum.reduceLanes(ADD);
   }
 
   @Benchmark
@@ -94,7 +95,7 @@ public class DotProduct {
       sum3 = FloatVector.fromArray(F256, left, i + width * 2).fma(FloatVector.fromArray(F256, right, i + width * 2), sum3);
       sum4 = FloatVector.fromArray(F256, left, i + width * 3).fma(FloatVector.fromArray(F256, right, i + width * 3), sum4);
     }
-    return sum1.addLanes() + sum2.addLanes() + sum3.addLanes() + sum4.addLanes();
+    return sum1.add(sum2).add(sum3).add(sum4).reduceLanes(ADD);
   }
 
   @Benchmark

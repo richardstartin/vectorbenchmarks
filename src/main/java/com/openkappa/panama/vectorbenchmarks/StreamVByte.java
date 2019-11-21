@@ -12,7 +12,7 @@ import static com.openkappa.panama.vectorbenchmarks.Util.S128;
 @BenchmarkMode(Mode.Throughput)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector",
-        "-XX:TypeProfileLevel=111", "-XX:-TieredCompilation", "-Djdk.incubator.vector.VECTOR_ACCESS_OOB_CHECK=0"})
+         "-XX:-TieredCompilation", "-Djdk.incubator.vector.VECTOR_ACCESS_OOB_CHECK=0"})
 public class StreamVByte {
 
   static long scalarEncode(int[] in,
@@ -64,22 +64,22 @@ public class StreamVByte {
   static int streamVByteEncode4(ByteVector in,
                                  byte[] data, int di,
                                  byte[] keys, int ki) {
-    var ones = IntVector.broadcast(I128, 0x01010101).reinterpret(B128);
-    var gatherBits = IntVector.broadcast(I128, 0x08040102).reinterpret(S128);
-    var codeTable = IntVector.scalars(I128, 0x03030303, 0x03030303, 0x03030303, 0x02020100).reinterpret(B128);
-    var gatherBytes = IntVector.scalars(I128, 0, 0, 0x0D090501, 0x0D090501).reinterpret(B128);
-    var aggregators = IntVector.scalars(I128, 0, 0, 0x01010101, 0x10400104).reinterpret(S128);
+    var ones = IntVector.broadcast(I128, 0x01010101).reinterpretAsBytes();
+    var gatherBits = IntVector.broadcast(I128, 0x08040102).reinterpretAsShorts();
+    var codeTable = IntVector.fromValues(I128, 0x03030303, 0x03030303, 0x03030303, 0x02020100).reinterpretAsBytes();
+    var gatherBytes = IntVector.fromValues(I128, 0, 0, 0x0D090501, 0x0D090501).reinterpretAsBytes();
+    var aggregators = IntVector.fromValues(I128, 0, 0, 0x01010101, 0x10400104).reinterpretAsShorts();
 
     // in general wrong because there are no unsigned types, but correct some of the time
     var m1 = (ByteVector) in.min(ones)
-               .reinterpret(S128)
+               .reinterpretAsShorts()
                .add(gatherBits)
-               .reinterpret(B128)
+               .reinterpretAsBytes()
                .rearrange(codeTable.toShuffle())
                .rearrange(gatherBytes.toShuffle())
-               .reinterpret(S128)
+               .reinterpretAsShorts()
                .add(aggregators)
-               .reinterpret(B128);
+               .reinterpretAsBytes();
 
     int code = m1.lane(1) & 0xFF;
     int length = LENGTH_TABLE[code];
@@ -90,7 +90,7 @@ public class StreamVByte {
   }
 
   static int streamVByteEncodeQuad(int[] in, int ii, byte[] out, int oi, byte[] keys, int ki) {
-    return streamVByteEncode4((ByteVector) IntVector.fromArray(I128, in, ii).reinterpret(B128), out, oi, keys, ki);
+    return streamVByteEncode4((ByteVector) IntVector.fromArray(I128, in, ii).reinterpretAsBytes(), out, oi, keys, ki);
   }
 
 

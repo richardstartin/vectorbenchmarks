@@ -10,13 +10,14 @@ import java.util.concurrent.TimeUnit;
 
 import static com.openkappa.panama.vectorbenchmarks.Util.I256;
 import static com.openkappa.panama.vectorbenchmarks.Util.newIntBitmap;
+import static jdk.incubator.vector.VectorOperators.LSHR;
+import static jdk.incubator.vector.VectorOperators.XOR;
 
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgsPrepend = {
         "--add-modules=jdk.incubator.vector",
-        "-XX:TypeProfileLevel=111",
         "-Djdk.incubator.vector.VECTOR_ACCESS_OOB_CHECK=0"
 })
 public class Hashing {
@@ -50,9 +51,9 @@ public class Hashing {
     var vectorMask = IntVector.broadcast(I256, mask);
     for (int i = 0; i < values.length; i += I256.length()) {
       var vector = IntVector.fromArray(I256, values, i);
-      vector = vector.xor(vector.shiftRight(15)).mul(c1);
-      vector = vector.xor(vector.shiftRight(15)).mul(c2);
-      vector.xor(vector.shiftRight(15)).and(vectorMask).intoArray(hashes, i);
+      vector = vector.lanewise(XOR, vector.lanewise(LSHR, 15)).mul(c1);
+      vector = vector.lanewise(XOR, vector.lanewise(LSHR, 15)).mul(c2);
+      vector.lanewise(XOR, vector.lanewise(LSHR, 15)).and(vectorMask).intoArray(hashes, i);
     }
     bh.consume(hashes);
   }

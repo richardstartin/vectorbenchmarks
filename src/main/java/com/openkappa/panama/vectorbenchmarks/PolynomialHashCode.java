@@ -9,11 +9,12 @@ import java.util.concurrent.TimeUnit;
 
 import static com.openkappa.panama.vectorbenchmarks.Util.I256;
 import static com.openkappa.panama.vectorbenchmarks.Util.newIntVector;
+import static jdk.incubator.vector.VectorOperators.ADD;
 
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Benchmark)
-@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector", "-XX:TypeProfileLevel=111"})
+@Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector"})
 public class PolynomialHashCode {
 
   @Param({"1024", "65536"})
@@ -74,7 +75,7 @@ public class PolynomialHashCode {
       acc = acc.add(coefficients.mul(IntVector.fromArray(I256, data, i - I256.length())));
       coefficients = coefficients.mul(next);
     }
-    return acc.addLanes() + coefficients.lane(7);
+    return acc.reduceLanes(ADD) + coefficients.lane(7);
   }
 
   @Benchmark
@@ -98,7 +99,7 @@ public class PolynomialHashCode {
       coefficients3 = coefficients3.mul(next);
       coefficients4 = coefficients4.mul(next);
     }
-    return acc1.add(acc2).add(acc3).add(acc4).addLanes() + coefficients1.lane(7);
+    return acc1.add(acc2).add(acc3).add(acc4).reduceLanes(ADD) + coefficients1.lane(7);
   }
 
 }
