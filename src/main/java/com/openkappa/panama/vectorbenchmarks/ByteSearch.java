@@ -1,6 +1,7 @@
 package com.openkappa.panama.vectorbenchmarks;
 
 import jdk.incubator.vector.ByteVector;
+import jdk.incubator.vector.IntVector;
 import jdk.incubator.vector.LongVector;
 import org.openjdk.jmh.annotations.*;
 
@@ -10,8 +11,7 @@ import java.nio.ByteOrder;
 import java.util.SplittableRandom;
 import java.util.concurrent.TimeUnit;
 
-import static com.openkappa.panama.vectorbenchmarks.Util.B256;
-import static com.openkappa.panama.vectorbenchmarks.Util.L256;
+import static com.openkappa.panama.vectorbenchmarks.Util.*;
 import static jdk.incubator.vector.VectorOperators.NE;
 
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
@@ -26,7 +26,7 @@ public class ByteSearch {
     @State(Scope.Benchmark)
     public static class FindByteState {
 
-        @Param({"8", "16",
+        @Param({//"8", "16",
                 "32", "256", "1024"})
         int size;
 
@@ -67,20 +67,21 @@ public class ByteSearch {
     public int vector(FindByteState state) {
         var data = state.getData();
         int offset = 0;
-        var holes = LongVector.broadcast(L256, 0x7F7F7F7F7F7F7F7FL);
-        var zero = LongVector.zero(L256);
+        var holes = IntVector.broadcast(I256, 0x7F7F7F7F);
+        var zero = IntVector.zero(I256);
         while (offset < data.length) {
             var vector = ByteVector.fromArray(B256, data, offset).reinterpretAsLongs();
             offset += B256.length();
-            var tmp = vector.reinterpretAsLongs()
+            var tmp = vector.reinterpretAsInts()
                     .and(holes)
                     .add(holes)
-                    .or(vector.reinterpretAsLongs())
+                    .or(vector.reinterpretAsInts())
                     .or(holes)
                     .not();
             if (!tmp.eq(zero).allTrue()) {
+                var longs = tmp.reinterpretAsLongs();
                 for (int i = 0; i < 4; ++i) {
-                    long word = tmp.lane(i);
+                    long word = longs.lane(i);
                     if (word != 0) {
                         return offset - (i * Long.BYTES + Long.numberOfLeadingZeros(word) >>> 3);
                     }
