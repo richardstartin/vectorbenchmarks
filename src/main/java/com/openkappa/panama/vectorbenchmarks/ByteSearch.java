@@ -70,14 +70,13 @@ public class ByteSearch {
         var holes = IntVector.broadcast(I256, 0x7F7F7F7F);
         var zero = IntVector.zero(I256);
         while (offset < data.length) {
-            var vector = ByteVector.fromArray(B256, data, offset).reinterpretAsLongs();
+            var vector = ByteVector.fromArray(B256, data, offset).reinterpretAsInts();
             offset += B256.length();
-            var tmp = vector.reinterpretAsInts()
-                    .and(holes)
-                    .add(holes)
-                    .or(vector.reinterpretAsInts())
-                    .or(holes)
-                    .not();
+            var tmp = vector.and(holes)
+                            .add(holes)
+                            .or(vector)
+                            .or(holes)
+                            .not();
             if (!tmp.eq(zero).allTrue()) {
                 var longs = tmp.reinterpretAsLongs();
                 for (int i = 0; i < 4; ++i) {
