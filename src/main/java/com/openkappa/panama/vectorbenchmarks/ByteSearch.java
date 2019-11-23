@@ -1,18 +1,19 @@
 package com.openkappa.panama.vectorbenchmarks;
 
 import jdk.incubator.vector.ByteVector;
-import jdk.incubator.vector.IntVector;
 import jdk.incubator.vector.LongVector;
 import org.openjdk.jmh.annotations.*;
 
+import javax.print.DocFlavor;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.SplittableRandom;
 import java.util.concurrent.TimeUnit;
 
-import static com.openkappa.panama.vectorbenchmarks.Util.*;
-import static jdk.incubator.vector.VectorOperators.NE;
+import static com.openkappa.panama.vectorbenchmarks.Util.B256;
+import static com.openkappa.panama.vectorbenchmarks.Util.L256;
 
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Fork(value = 1, jvmArgsPrepend = {
@@ -20,6 +21,17 @@ import static jdk.incubator.vector.VectorOperators.NE;
         "-Djdk.incubator.vector.VECTOR_ACCESS_OOB_CHECK=0"
 })
 public class ByteSearch {
+
+    public static void main(String... args) {
+        FindByteState state = new FindByteState();
+        state.size = 32;
+        state.logPermutations = 1;
+        state.init();
+        ByteSearch bs = new ByteSearch();
+        System.out.println(bs.vector(state));
+        System.out.println(bs.scan(state));
+        System.out.println(bs.swar(state));
+    }
 
     private static final VarHandle TO_LONG = MethodHandles.byteArrayViewVarHandle(long[].class, ByteOrder.LITTLE_ENDIAN);
 
@@ -66,23 +78,38 @@ public class ByteSearch {
     @Benchmark
     public int vector(FindByteState state) {
         var data = state.getData();
+        // underflow
+        if (data.length < B256.length()) {
+            return firstNonZeroByteSWAR(data);
+        }
         int offset = 0;
-        var holes = IntVector.broadcast(I256, 0x7F7F7F7F);
-        var zero = IntVector.zero(I256);
-        while (offset < data.length) {
-            var vector = ByteVector.fromArray(B256, data, offset).reinterpretAsInts();
-            offset += B256.length();
-            var tmp = vector.and(holes)
-                            .add(holes)
-                            .or(vector)
-                            .or(holes)
-                            .not();
+        int loopBound = B256.loopBound(data.length);
+        var holes = ByteVector.broadcast(B256, (byte)0x7F);
+        var zero = ByteVector.zero(B256);
+        while (offset < loopBound) {
+            var vector = ByteVector.fromArray(B256, data, offset);
+            var tmp = vector.and(holes).add(holes).or(vector).or(holes).not();
             if (!tmp.eq(zero).allTrue()) {
-                var longs = tmp.reinterpretAsLongs();
+                var longs = vector.reinterpretAsLongs();
                 for (int i = 0; i < 4; ++i) {
                     long word = longs.lane(i);
                     if (word != 0) {
-                        return offset - (i * Long.BYTES + Long.numberOfLeadingZeros(word) >>> 3);
+                        return offset + B256.length() - (i * Long.BYTES + Long.numberOfLeadingZeros(word) >>> 3);
+                    }
+                }
+            }
+            offset += B256.length();
+        }
+        // post loop
+        if (loopBound != data.length) {
+            var vector = ByteVector.fromArray(B256, data, data.length - B256.length());
+            var tmp = vector.and(holes).add(holes).or(vector).or(holes).not();
+            if (!tmp.eq(zero).allTrue()) {
+                var longs = vector.reinterpretAsLongs();
+                for (int i = 0; i < 4; ++i) {
+                    long word = longs.lane(i);
+                    if (word != 0) {
+                        return offset + B256.length() - (i * Long.BYTES + Long.numberOfLeadingZeros(word) >>> 3);
                     }
                 }
             }
@@ -92,13 +119,16 @@ public class ByteSearch {
 
     @Benchmark
     public int swar(FindByteState state) {
-        var data = state.getData();
+        return firstNonZeroByteSWAR(state.getData());
+    }
+
+    private static int firstNonZeroByteSWAR(byte[] data) {
         int offset = 0;
         while (offset < data.length) {
-            int index = firstNonZeroByte(getWord(data, offset));
+            int index = firstZeroByte(getWord(data, offset));
             offset += Long.BYTES;
             if (index < Long.BYTES) {
-                return offset - index - 1;
+                return offset - index;
             }
         }
         return -1;
@@ -115,22 +145,7 @@ public class ByteSearch {
         return -1;
     }
 
-    private static int firstNonZeroByte(ByteVector vector) {
-        var holes = LongVector.broadcast(L256, 0x7F7F7F7F7F7F7F7FL);
-        var tmp = vector.reinterpretAsLongs().and(holes).add(holes);
-        tmp = tmp.or(vector.reinterpretAsLongs()).or(holes).not();
-        if (tmp.compare(NE, LongVector.zero(L256)).anyTrue()) {
-            for (int i = 0; i < 4; ++i) {
-                long word = tmp.lane(i);
-                if (word != 0) {
-                    return i * Long.BYTES + Long.numberOfLeadingZeros(word) >>> 3;
-                }
-            }
-        }
-        return -1;
-    }
-
-    private static int firstNonZeroByte(long word) {
+    private static int firstZeroByte(long word) {
         long tmp = (word & 0x7F7F7F7F7F7F7F7FL) + 0x7F7F7F7F7F7F7F7FL;
         tmp = ~(tmp | word | 0x7F7F7F7F7F7F7F7FL);
         return Long.numberOfLeadingZeros(tmp) >>> 3;
