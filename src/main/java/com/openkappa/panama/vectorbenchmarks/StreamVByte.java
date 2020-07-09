@@ -65,10 +65,14 @@ public class StreamVByte {
                                  byte[] data, int di,
                                  byte[] keys, int ki) {
     var ones = IntVector.broadcast(I128, 0x01010101).reinterpretAsBytes();
-    var gatherBits = IntVector.broadcast(I128, 0x08040102).reinterpretAsShorts();
-    var codeTable = IntVector.fromValues(I128, 0x03030303, 0x03030303, 0x03030303, 0x02020100).reinterpretAsBytes();
-    var gatherBytes = IntVector.fromValues(I128, 0, 0, 0x0D090501, 0x0D090501).reinterpretAsBytes();
-    var aggregators = IntVector.fromValues(I128, 0, 0, 0x01010101, 0x10400104).reinterpretAsShorts();
+    var gatherBits = IntVector.broadcast(I128, 0x08040102)
+            .reinterpretAsShorts();
+    var codeTable = IntVector.fromArray(I128, new int[]{0x03030303, 0x03030303, 0x03030303, 0x02020100}, 0)
+            .reinterpretAsBytes();
+    var gatherBytes = IntVector.fromArray(I128, new int[]{0, 0, 0x0D090501, 0x0D090501}, 0)
+            .reinterpretAsBytes();
+    var aggregators = IntVector.fromArray(I128, new int[]{0, 0, 0x01010101, 0x10400104}, 0)
+            .reinterpretAsShorts();
 
     // in general wrong because there are no unsigned types, but correct some of the time
     var m1 = (ByteVector) in.min(ones)
