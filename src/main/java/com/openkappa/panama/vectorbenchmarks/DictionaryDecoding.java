@@ -9,7 +9,8 @@ import java.nio.ByteBuffer;
 import java.util.SplittableRandom;
 
 import static com.openkappa.panama.vectorbenchmarks.Util.I256;
-import static jdk.incubator.vector.VectorOperators.*;
+import static jdk.incubator.vector.VectorOperators.AND;
+import static jdk.incubator.vector.VectorOperators.LSHR;
 
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector"})
@@ -20,15 +21,18 @@ public class DictionaryDecoding {
 DictionaryDecoding.scalar1  1000000  avgt    5  167.318 ± 0.229  us/op
 DictionaryDecoding.scalar2  1000000  avgt    5  172.398 ± 0.243  us/op
 DictionaryDecoding.scalar3  1000000  avgt    5  181.625 ± 0.325  us/op
+DictionaryDecoding.scalar4  1000000  avgt    5  175.840 ± 0.065  us/op
 DictionaryDecoding.vector1  1000000  avgt    5   74.040 ± 0.087  us/op
 DictionaryDecoding.vector2  1000000  avgt    5   84.859 ± 0.055  us/op
 DictionaryDecoding.vector3  1000000  avgt    5  157.815 ± 0.713  us/op
+DictionaryDecoding.vector4  1000000  avgt    5   98.945 ± 0.386  us/op
 
    */
 
   private static final int[] SHIFTS_1 = {31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
   private static final int[] SHIFTS_2 = {30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8, 6, 4, 2, 0};
   private static final int[] SHIFTS_3 = {29, 26, 23, 20, 17, 14, 11, 8, 5, 2, 31, 28, 25, 22, 19, 16, 13, 10, 7, 4, 1, 30, 27, 24, 21, 18, 15, 12, 9, 6, 3, 0};
+  private static final int[] SHIFTS_4 = {28, 24, 20, 16, 12, 8, 4, 0};
 
   @Param("1000000")
   int size;
@@ -98,6 +102,24 @@ DictionaryDecoding.vector3  1000000  avgt    5  157.815 ± 0.713  us/op
   public void scalar3(Blackhole bh) {
     for (int i = 0; i < size / 4; i += 32) {
       read323(values, i, buffer, 0);
+      bh.consume(buffer);
+    }
+  }
+
+  @Benchmark
+  @CompilerControl(CompilerControl.Mode.DONT_INLINE)
+  public void vector4(Blackhole bh) {
+    for (int i = 0; i < size / 4; i += 32) {
+      read32Vector4(values, i, buffer, 0);
+      bh.consume(buffer);
+    }
+  }
+
+  @Benchmark
+  @CompilerControl(CompilerControl.Mode.DONT_INLINE)
+  public void scalar4(Blackhole bh) {
+    for (int i = 0; i < size / 4; i += 32) {
+      read324(values, i, buffer, 0);
       bh.consume(buffer);
     }
   }
@@ -290,5 +312,71 @@ DictionaryDecoding.vector3  1000000  avgt    5  157.815 ± 0.713  us/op
     out[outPos + 29] = (i2 >>> 6) & 0x7;
     out[outPos + 30] = (i2 >>> 3) & 0x7;
     out[outPos + 31] = i2 & 0x7;
+  }
+
+  public void read32Vector4(ByteBuffer in, int index, int[] out, int outPos) {
+    int offset = index >>> 1;
+    int i0 = in.getInt(offset);
+    int i1 = in.getInt(offset + 4);
+    int i2 = in.getInt(offset + 8);
+    int i3 = in.getInt(offset + 12);
+    IntVector LSB = IntVector.broadcast(I256, 0xF);
+    var shifts = IntVector.fromArray(I256, SHIFTS_4, 0);
+    IntVector.broadcast(I256, i0)
+            .lanewise(LSHR, shifts)
+            .lanewise(AND, LSB)
+            .intoArray(out, outPos);
+    IntVector.broadcast(I256, i1)
+            .lanewise(LSHR, shifts)
+            .lanewise(AND, LSB)
+            .intoArray(out, outPos + 8);
+    IntVector.broadcast(I256, i2)
+            .lanewise(LSHR, shifts)
+            .lanewise(AND, LSB)
+            .intoArray(out, outPos + 16);
+    IntVector.broadcast(I256, i3)
+            .lanewise(LSHR, shifts)
+            .lanewise(AND, LSB)
+            .intoArray(out, outPos + 24);
+  }
+
+  public void read324(ByteBuffer in, int index, int[] out, int outPos) {
+    int offset = index >>> 1;
+    int i0 = in.getInt(offset);
+    int i1 = in.getInt(offset + 4);
+    int i2 = in.getInt(offset + 8);
+    int i3 = in.getInt(offset + 12);
+    out[outPos] = i0 >>> 28;
+    out[outPos + 1] = (i0 >>> 24) & 0xf;
+    out[outPos + 2] = (i0 >>> 20) & 0xf;
+    out[outPos + 3] = (i0 >>> 16) & 0xf;
+    out[outPos + 4] = (i0 >>> 12) & 0xf;
+    out[outPos + 5] = (i0 >>> 8) & 0xf;
+    out[outPos + 6] = (i0 >>> 4) & 0xf;
+    out[outPos + 7] = i0 & 0xf;
+    out[outPos + 8] = i1 >>> 28;
+    out[outPos + 9] = (i1 >>> 24) & 0xf;
+    out[outPos + 10] = (i1 >>> 20) & 0xf;
+    out[outPos + 11] = (i1 >>> 16) & 0xf;
+    out[outPos + 12] = (i1 >>> 12) & 0xf;
+    out[outPos + 13] = (i1 >>> 8) & 0xf;
+    out[outPos + 14] = (i1 >>> 4) & 0xf;
+    out[outPos + 15] = i1 & 0xf;
+    out[outPos + 16] = i2 >>> 28;
+    out[outPos + 17] = (i2 >>> 24) & 0xf;
+    out[outPos + 18] = (i2 >>> 20) & 0xf;
+    out[outPos + 19] = (i2 >>> 16) & 0xf;
+    out[outPos + 20] = (i2 >>> 12) & 0xf;
+    out[outPos + 21] = (i2 >>> 8) & 0xf;
+    out[outPos + 22] = (i2 >>> 4) & 0xf;
+    out[outPos + 23] = i2 & 0xf;
+    out[outPos + 24] = i3 >>> 28;
+    out[outPos + 25] = (i3 >>> 24) & 0xf;
+    out[outPos + 26] = (i3 >>> 20) & 0xf;
+    out[outPos + 27] = (i3 >>> 16) & 0xf;
+    out[outPos + 28] = (i3 >>> 12) & 0xf;
+    out[outPos + 29] = (i3 >>> 8) & 0xf;
+    out[outPos + 30] = (i3 >>> 4) & 0xf;
+    out[outPos + 31] = i3 & 0xf;
   }
 }
