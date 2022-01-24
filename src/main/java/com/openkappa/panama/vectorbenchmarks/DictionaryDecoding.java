@@ -15,6 +15,17 @@ import static jdk.incubator.vector.VectorOperators.*;
 @Fork(value = 1, jvmArgsPrepend = {"--add-modules=jdk.incubator.vector"})
 public class DictionaryDecoding {
 
+  /*
+  Benchmark                    (size)  Mode  Cnt    Score   Error  Units
+DictionaryDecoding.scalar1  1000000  avgt    5  167.318 ± 0.229  us/op
+DictionaryDecoding.scalar2  1000000  avgt    5  172.398 ± 0.243  us/op
+DictionaryDecoding.scalar3  1000000  avgt    5  181.625 ± 0.325  us/op
+DictionaryDecoding.vector1  1000000  avgt    5   74.040 ± 0.087  us/op
+DictionaryDecoding.vector2  1000000  avgt    5   84.859 ± 0.055  us/op
+DictionaryDecoding.vector3  1000000  avgt    5  157.815 ± 0.713  us/op
+
+   */
+
   private static final int[] SHIFTS_1 = {31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
   private static final int[] SHIFTS_2 = {30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8, 6, 4, 2, 0};
   private static final int[] SHIFTS_3 = {29, 26, 23, 20, 17, 14, 11, 8, 5, 2, 31, 28, 25, 22, 19, 16, 13, 10, 7, 4, 1, 30, 27, 24, 21, 18, 15, 12, 9, 6, 3, 0};
